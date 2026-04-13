@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : MonoBehaviour
@@ -13,11 +14,9 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    private void Update()
+    public void OnMove(InputValue value)
     {
-        float x = Input.GetAxisRaw("Horizontal"); // A/D
-        float y = Input.GetAxisRaw("Vertical");   // W/S
-        inputDirection = new Vector2(x, y).normalized;
+        inputDirection = value.Get<Vector2>();
     }
 
     private void FixedUpdate()
