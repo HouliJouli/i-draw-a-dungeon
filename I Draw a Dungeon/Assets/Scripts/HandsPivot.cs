@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class HandsPivot : MonoBehaviour
 {
@@ -7,7 +8,8 @@ public class HandsPivot : MonoBehaviour
 
     private void Update()
     {
-        Vector3 mouseWorld = cam.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mouseScreen = Mouse.current.position.ReadValue();
+        Vector3 mouseWorld = cam.ScreenToWorldPoint(mouseScreen);
         mouseWorld.z = 0f;
 
         Vector2 direction = (mouseWorld - transform.position).normalized;
