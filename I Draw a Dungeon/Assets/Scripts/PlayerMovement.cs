@@ -16,6 +16,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 inputDirection;
     private Vector2 lastDirection = Vector2.right;
 
+    public float DashCooldownRatio => dashCooldown > 0f ? Mathf.Clamp01(1f - cooldownTimer / dashCooldown) : 1f;
+
     private bool isDashing;
     private float dashTimer;
     private float cooldownTimer;
