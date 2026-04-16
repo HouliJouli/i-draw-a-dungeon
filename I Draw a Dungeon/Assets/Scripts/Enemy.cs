@@ -8,6 +8,8 @@ public class Enemy : MonoBehaviour, IDamageable
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float stopDistance = 1f;
+    [SerializeField] private float separationRadius = 1f;
+    [SerializeField] private float separationForce = 2f;
 
     [Header("Attack")]
     [SerializeField] private float attackDamage = 10f;
@@ -65,15 +67,34 @@ public class Enemy : MonoBehaviour, IDamageable
             return;
         }
 
+        Vector2 separation = GetSeparationVector();
+
         if (distance > stopDistance)
         {
             Vector2 direction = toPlayer / distance;
-            rb.MovePosition(rb.position + direction * moveSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(rb.position + (direction * moveSpeed + separation) * Time.fixedDeltaTime);
         }
         else
         {
-            rb.linearVelocity = Vector2.zero;
+            rb.MovePosition(rb.position + separation * Time.fixedDeltaTime);
         }
+    }
+
+    private Vector2 GetSeparationVector()
+    {
+        Vector2 separation = Vector2.zero;
+        Collider2D[] neighbors = Physics2D.OverlapCircleAll(rb.position, separationRadius);
+        foreach (Collider2D col in neighbors)
+        {
+            if (col.gameObject == gameObject) continue;
+            if (!col.TryGetComponent<Enemy>(out _)) continue;
+
+            Vector2 away = rb.position - (Vector2)col.transform.position;
+            float dist = away.magnitude;
+            if (dist > 0f)
+                separation += away.normalized * (separationRadius - dist);
+        }
+        return separation * separationForce;
     }
 
     private bool TryAttackPlayer()

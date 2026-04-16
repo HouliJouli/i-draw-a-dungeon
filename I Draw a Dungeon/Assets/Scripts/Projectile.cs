@@ -10,9 +10,11 @@ public class Projectile : MonoBehaviour
     private Vector2 direction;
     private Vector2 spawnPosition;
     private bool launched;
+    private string targetTag;
 
-    public void Init(Vector2 direction, Collider2D owner = null)
+    public void Init(Vector2 direction, Collider2D owner = null, string targetTag = "")
     {
+        this.targetTag = targetTag;
         this.direction = direction.normalized;
         spawnPosition = transform.position;
         launched = true;
@@ -42,6 +44,12 @@ public class Projectile : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!launched) return;
+
+        if (!string.IsNullOrEmpty(targetTag) && !other.CompareTag(targetTag))
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         if (other.TryGetComponent(out IDamageable damageable))
             damageable.TakeDamage(damage);

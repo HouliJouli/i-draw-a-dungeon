@@ -18,6 +18,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     [SerializeField] private float dashSpeed = 20f;
     [SerializeField] private float dashDuration = 0.15f;
     [SerializeField] private float dashCooldown = 1f;
+    [SerializeField] private float postDashInvincibility = 0.5f;
 
     private float currentHealth;
 
@@ -31,6 +32,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     private bool isInvincible;
     public bool IsInvincible => isInvincible;
     private float dashTimer;
+    private float invincibilityTimer;
     private float cooldownTimer;
 
     private void Awake()
@@ -116,11 +118,20 @@ weaponHolder?.CurrentWeapon?.TryAttack();
             if (dashTimer <= 0f)
             {
                 isDashing = false;
-                isInvincible = false;
-                SetDashInvincibility(false);
+                invincibilityTimer = postDashInvincibility;
             }
 
             return;
+        }
+
+        if (invincibilityTimer > 0f)
+        {
+            invincibilityTimer -= Time.fixedDeltaTime;
+            if (invincibilityTimer <= 0f)
+            {
+                isInvincible = false;
+                SetDashInvincibility(false);
+            }
         }
 
         cooldownTimer -= Time.fixedDeltaTime;
