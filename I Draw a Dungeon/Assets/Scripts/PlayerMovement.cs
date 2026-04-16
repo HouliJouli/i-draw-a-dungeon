@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Weapon")]
     [SerializeField] private WeaponHolder weaponHolder;
+    [SerializeField] private float collectRadius = 1.5f;
 
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 20f;
@@ -28,6 +29,10 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        Physics2D.IgnoreLayerCollision(
+            LayerMask.NameToLayer("Projectiles"),
+            LayerMask.NameToLayer("Default"),
+            true);
     }
 
     public void OnMove(InputValue value)
@@ -41,7 +46,22 @@ public class PlayerMovement : MonoBehaviour
     public void OnAttack(InputValue value)
     {
         if (!value.isPressed) return;
-        weaponHolder?.CurrentWeapon?.TryAttack();
+weaponHolder?.CurrentWeapon?.TryAttack();
+    }
+
+    public void OnCollect(InputValue value)
+    {
+        if (!value.isPressed) return;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, collectRadius);
+        foreach (Collider2D hit in hits)
+        {
+            if (hit.TryGetComponent(out WeaponPickup pickup))
+            {
+                pickup.Collect(weaponHolder);
+                return;
+            }
+        }
     }
 
     public void OnDash(InputValue value)
@@ -59,8 +79,8 @@ public class PlayerMovement : MonoBehaviour
     private void SetDashInvincibility(bool active)
     {
         int playerLayer = gameObject.layer;
-        int enemyLayer = LayerMask.NameToLayer("Enemies");
-        Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, active);
+        Physics2D.IgnoreLayerCollision(playerLayer, LayerMask.NameToLayer("Enemies"), active);
+        Physics2D.IgnoreLayerCollision(playerLayer, LayerMask.NameToLayer("Projectiles"), active);
     }
 
     private void FixedUpdate()

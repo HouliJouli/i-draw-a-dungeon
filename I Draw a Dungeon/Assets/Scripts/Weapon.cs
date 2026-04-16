@@ -7,7 +7,17 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] protected float attackRange = 0.5f;
     [SerializeField] protected float attackCooldown = 0.5f;
 
+    [Header("Durability")]
+    [Tooltip("0 = infinite (default weapon)")]
+    [SerializeField] private int maxUses = 0;
+
     protected float cooldownTimer;
+    private int usesLeft;
+
+    protected virtual void Awake()
+    {
+        usesLeft = maxUses;
+    }
 
     public void TryAttack()
     {
@@ -17,6 +27,15 @@ public abstract class Weapon : MonoBehaviour
     }
 
     protected abstract void PerformAttack();
+
+    protected void ConsumeUse()
+    {
+        if (maxUses == 0) return;
+
+        usesLeft--;
+        if (usesLeft <= 0)
+            GetComponentInParent<WeaponHolder>()?.BreakCurrentWeapon();
+    }
 
     private void Update()
     {
