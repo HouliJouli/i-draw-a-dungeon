@@ -83,7 +83,21 @@ Victory
     Sala com props
   Conexões previsíveis (legibilidade > realismo)
 
-4.4 Zone System (CRÍTICO)
+4.4 Câmera — Shared Screen
+  Câmera única compartilhada entre todos os players (mesma tela)
+  Zoom dinâmico baseado na distância entre players:
+    Players próximos → mais zoom (leitura de combate corpo a corpo)
+    Players distantes → menos zoom (mapa visível, pressão de zona legível)
+    Limites de zoom evitam que a câmera fique inutilizável nos extremos
+  Posição centralizada entre todos os players ativos
+  Confinada pelos limites do nível (nunca mostra fora do mapa)
+
+  Impacto de design:
+    Cria tensão de proximidade — se você se afasta, a câmera abre e o oponente vê mais
+    Convergência forçada pela zona amplifica o efeito (espaço reduzido = zoom aumenta)
+    Informação parcial preservada: zoom máximo ainda não mostra o mapa inteiro
+
+4.5 Zone System (CRÍTICO)
   Tiles entram em estado:
     Safe → Warning → Dead
   Tempo por camada
