@@ -20,8 +20,8 @@ public class Projectile : MonoBehaviour
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            rb.linearVelocity = Vector2.zero;
             rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.linearVelocity = direction * speed;
         }
 
         if (owner != null)
@@ -34,8 +34,6 @@ public class Projectile : MonoBehaviour
     private void Update()
     {
         if (!launched) return;
-
-        transform.Translate(direction * speed * Time.deltaTime, Space.World);
 
         if (Vector2.Distance(transform.position, spawnPosition) >= maxDistance)
             Destroy(gameObject);
