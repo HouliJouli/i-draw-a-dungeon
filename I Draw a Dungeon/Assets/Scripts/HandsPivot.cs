@@ -23,7 +23,11 @@ public class HandsPivot : MonoBehaviour
 
     private void Update()
     {
+        if (Mouse.current == null) return;
+
         Vector2 mouseScreen = Mouse.current.position.ReadValue();
+        if (float.IsNaN(mouseScreen.x) || float.IsNaN(mouseScreen.y)) return;
+
         Vector3 mouseWorld = cam.ScreenToWorldPoint(mouseScreen);
         mouseWorld.z = 0f;
 
