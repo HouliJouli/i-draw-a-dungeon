@@ -104,9 +104,11 @@ public class MeleeWeapon : Weapon
 
     private void DetectHits()
     {
+        Collider2D ownerCollider = GetComponentInParent<Collider2D>();
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
         foreach (Collider2D hit in hits)
         {
+            if (hit == ownerCollider) continue;
             if (hitTargets.Contains(hit)) continue;
             hitTargets.Add(hit);
             hitRegistered = true;

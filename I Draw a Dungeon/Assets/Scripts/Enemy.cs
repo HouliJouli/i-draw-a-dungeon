@@ -30,22 +30,32 @@ public class Enemy : MonoBehaviour, IDamageable
         rb = GetComponent<Rigidbody2D>();
     }
 
-    private void Start()
-    {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            player = playerObj.transform;
-            playerDamageable = playerObj.GetComponent<IDamageable>();
-            playerMovement = playerObj.GetComponent<PlayerMovement>();
-            playerHitEffect = playerObj.GetComponent<HitEffect>();
-        }
-    }
-
     public bool IsKnockedBack { get; set; }
+
+    private void RefreshTarget()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closest = Mathf.Infinity;
+        GameObject target = null;
+
+        foreach (GameObject p in players)
+        {
+            if (!p.activeInHierarchy) continue;
+            float dist = Vector2.Distance(rb.position, p.transform.position);
+            if (dist < closest) { closest = dist; target = p; }
+        }
+
+        if (target == null) { player = null; return; }
+
+        player = target.transform;
+        playerDamageable = target.GetComponent<IDamageable>();
+        playerMovement = target.GetComponent<PlayerMovement>();
+        playerHitEffect = target.GetComponent<HitEffect>();
+    }
 
     private void FixedUpdate()
     {
+        RefreshTarget();
         if (player == null || IsKnockedBack) return;
 
         Vector2 toPlayer = (Vector2)player.position - rb.position;

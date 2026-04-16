@@ -81,10 +81,11 @@ MonoBehaviour:
   damage: 10
   attackRange: 0.5
   attackCooldown: 0.5
+  maxUses: 0
   attackPoint: {fileID: 676930918301256637}
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 72
   swingAngle: 80
   swingDuration: 0.2
   overshootAngle: 15

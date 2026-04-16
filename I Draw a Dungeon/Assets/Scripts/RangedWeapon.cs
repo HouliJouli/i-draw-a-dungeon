@@ -33,8 +33,8 @@ if (projectilePrefab == null || firePoint == null) return;
             nocked = null;
         }
 
-        Vector2 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        Vector2 aimDirection = (mouseWorld - (Vector2)firePoint.position).normalized;
+        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
+        Vector2 aimDirection = handsPivot != null ? handsPivot.AimDirection : (Vector2)firePoint.right;
 
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
         GameObject obj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);

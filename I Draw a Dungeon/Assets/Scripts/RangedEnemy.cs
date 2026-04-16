@@ -39,18 +39,28 @@ public class RangedEnemy : MonoBehaviour, IDamageable
         col = GetComponent<Collider2D>();
     }
 
-    private void Start()
+    private void RefreshTarget()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closest = Mathf.Infinity;
+        GameObject target = null;
+
+        foreach (GameObject p in players)
         {
-            player = playerObj.transform;
-            playerMovement = playerObj.GetComponent<PlayerMovement>();
+            if (!p.activeInHierarchy) continue;
+            float dist = Vector2.Distance(rb.position, p.transform.position);
+            if (dist < closest) { closest = dist; target = p; }
         }
+
+        if (target == null) { player = null; return; }
+
+        player = target.transform;
+        playerMovement = target.GetComponent<PlayerMovement>();
     }
 
     private void Update()
     {
+        RefreshTarget();
         if (player == null || aimPivot == null) return;
 
         Vector2 dir = (Vector2)player.position - (Vector2)aimPivot.position;

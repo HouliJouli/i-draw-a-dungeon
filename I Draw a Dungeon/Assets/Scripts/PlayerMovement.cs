@@ -31,6 +31,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     private bool isDashing;
     private bool isInvincible;
     public bool IsInvincible => isInvincible;
+    public bool IsKnockedBack { get; set; }
     private float dashTimer;
     private float invincibilityTimer;
     private float cooldownTimer;
@@ -135,6 +136,7 @@ weaponHolder?.CurrentWeapon?.TryAttack();
         }
 
         cooldownTimer -= Time.fixedDeltaTime;
+        if (IsKnockedBack) return;
         rb.linearVelocity = inputDirection * moveSpeed;
     }
 }
