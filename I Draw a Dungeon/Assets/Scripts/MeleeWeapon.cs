@@ -18,8 +18,12 @@ public class MeleeWeapon : Weapon
     [SerializeField] [Range(0f, 1f)] private float activeStart = 0.3f;
     [SerializeField] [Range(0f, 1f)] private float activeEnd   = 0.7f;
 
+    [Header("Hit Feedback")]
+    [SerializeField] private float hitStopDuration = 0.04f;
+
     private readonly HashSet<Collider2D> hitTargets = new();
     private Vector3 originalScale;
+    private bool hitRegistered;
 
     private void Awake()
     {
@@ -35,6 +39,7 @@ public class MeleeWeapon : Weapon
     private IEnumerator SwingRoutine()
     {
         hitTargets.Clear();
+        hitRegistered = false;
         float halfDuration = swingDuration * 0.5f;
         float elapsed = 0f;
 
@@ -61,6 +66,12 @@ public class MeleeWeapon : Weapon
             float normalizedTime = elapsed / halfDuration;
             if (normalizedTime >= activeStart && normalizedTime <= activeEnd)
                 DetectHits();
+
+            if (hitRegistered)
+            {
+                hitRegistered = false;
+                yield return new WaitForSecondsRealtime(hitStopDuration);
+            }
 
             yield return null;
         }
@@ -98,8 +109,12 @@ public class MeleeWeapon : Weapon
         {
             if (hitTargets.Contains(hit)) continue;
             hitTargets.Add(hit);
+            hitRegistered = true;
+
             if (hit.TryGetComponent(out IDamageable damageable))
                 damageable.TakeDamage(damage);
+            if (hit.TryGetComponent(out HitEffect hitEffect))
+                hitEffect.TriggerHit(attackPoint.position);
         }
     }
 
