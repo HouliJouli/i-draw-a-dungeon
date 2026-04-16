@@ -7,7 +7,17 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] protected float attackRange = 0.5f;
     [SerializeField] protected float attackCooldown = 0.5f;
 
+    [Header("Hands Preset")]
+    [SerializeField] private int weaponPresetIndex = 0;
+
     protected float cooldownTimer;
+
+    private void Awake()
+    {
+        HandsPivot pivot = GetComponentInParent<HandsPivot>();
+        if (pivot != null)
+            pivot.SetPreset(weaponPresetIndex);
+    }
 
     public void TryAttack()
     {
