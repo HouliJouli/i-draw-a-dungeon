@@ -14,6 +14,12 @@ public class MeleeWeapon : Weapon
     [SerializeField] private float squashAmount = 0.15f;
 
     private bool hitDetected;
+    private Vector3 originalScale;
+
+    private void Awake()
+    {
+        originalScale = transform.localScale;
+    }
 
     protected override void PerformAttack()
     {
@@ -32,7 +38,7 @@ public class MeleeWeapon : Weapon
         Quaternion overshootRot = Quaternion.Euler(0f, 0f, -swingAngle - overshootAngle);
 
         transform.localRotation = startRot;
-        transform.localScale = Vector3.one;
+        transform.localScale = originalScale;
 
         // Swing forward
         while (elapsed < halfDuration)
@@ -43,7 +49,10 @@ public class MeleeWeapon : Weapon
 
             // Squash peaks at midpoint (compress length, widen breadth)
             float squashT = Mathf.Sin(t * Mathf.PI);
-            transform.localScale = new Vector3(1f + squashAmount * squashT, 1f - squashAmount * squashT, 1f);
+            transform.localScale = new Vector3(
+                originalScale.x * (1f + squashAmount * squashT),
+                originalScale.y * (1f - squashAmount * squashT),
+                originalScale.z);
 
             if (!hitDetected && elapsed >= halfDuration * 0.5f)
             {
@@ -72,12 +81,12 @@ public class MeleeWeapon : Weapon
             elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
             transform.localRotation = Quaternion.Lerp(overshootRot, Quaternion.identity, t);
-            transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, t);
+            transform.localScale = Vector3.Lerp(transform.localScale, originalScale, t);
             yield return null;
         }
 
         transform.localRotation = Quaternion.identity;
-        transform.localScale = Vector3.one;
+        transform.localScale = originalScale;
     }
 
     private void DetectHits()
