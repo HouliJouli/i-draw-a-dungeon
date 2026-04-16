@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
 
     [Header("Weapon")]
-    [SerializeField] private Weapon currentWeapon;
+    [SerializeField] private WeaponHolder weaponHolder;
 
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 20f;
@@ -41,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
     public void OnAttack(InputValue value)
     {
         if (!value.isPressed) return;
-        currentWeapon?.TryAttack();
+        weaponHolder?.CurrentWeapon?.TryAttack();
     }
 
     public void OnDash(InputValue value)
