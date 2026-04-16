@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 343973876}
   - component: {fileID: 343973877}
   - component: {fileID: 343973878}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -979,7 +979,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 735554853}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: RightWeaponSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1011,7 +1011,7 @@ GameObject:
   m_Component:
   - component: {fileID: 990520493}
   - component: {fileID: 990520494}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: HandsPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1471,7 +1471,7 @@ GameObject:
   - component: {fileID: 1451746066}
   - component: {fileID: 1451746065}
   - component: {fileID: 1451746064}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: DashIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1665,7 +1665,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1492739853}
   - component: {fileID: 1492739854}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LeftHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1755,7 +1755,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1516289429}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LeftWeaponSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1972,7 +1972,7 @@ GameObject:
   - component: {fileID: 1946074497}
   - component: {fileID: 1946074496}
   - component: {fileID: 1946074495}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: HUD
   m_TagString: Untagged
   m_Icon: {fileID: 0}
