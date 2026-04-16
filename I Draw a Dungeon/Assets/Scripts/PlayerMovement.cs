@@ -53,6 +53,14 @@ public class PlayerMovement : MonoBehaviour
         isDashing = true;
         dashTimer = dashDuration;
         cooldownTimer = dashCooldown;
+        SetDashInvincibility(true);
+    }
+
+    private void SetDashInvincibility(bool active)
+    {
+        int playerLayer = gameObject.layer;
+        int enemyLayer = LayerMask.NameToLayer("Enemies");
+        Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, active);
     }
 
     private void FixedUpdate()
@@ -63,7 +71,10 @@ public class PlayerMovement : MonoBehaviour
             rb.linearVelocity = lastDirection.normalized * dashSpeed;
 
             if (dashTimer <= 0f)
+            {
                 isDashing = false;
+                SetDashInvincibility(false);
+            }
 
             return;
         }
