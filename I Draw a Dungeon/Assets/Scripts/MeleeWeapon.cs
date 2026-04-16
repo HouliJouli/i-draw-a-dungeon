@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MeleeWeapon : Weapon
@@ -13,7 +14,11 @@ public class MeleeWeapon : Weapon
     [SerializeField] private float overshootAngle = 15f;
     [SerializeField] private float squashAmount = 0.15f;
 
-    private bool hitDetected;
+    [Header("Hit Window")]
+    [SerializeField] [Range(0f, 1f)] private float activeStart = 0.3f;
+    [SerializeField] [Range(0f, 1f)] private float activeEnd   = 0.7f;
+
+    private readonly HashSet<Collider2D> hitTargets = new();
     private Vector3 originalScale;
 
     private void Awake()
@@ -29,7 +34,7 @@ public class MeleeWeapon : Weapon
 
     private IEnumerator SwingRoutine()
     {
-        hitDetected = false;
+        hitTargets.Clear();
         float halfDuration = swingDuration * 0.5f;
         float elapsed = 0f;
 
@@ -47,18 +52,15 @@ public class MeleeWeapon : Weapon
             float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
             transform.localRotation = Quaternion.Lerp(startRot, endRot, t);
 
-            // Squash peaks at midpoint (compress length, widen breadth)
             float squashT = Mathf.Sin(t * Mathf.PI);
             transform.localScale = new Vector3(
                 originalScale.x * (1f + squashAmount * squashT),
                 originalScale.y * (1f - squashAmount * squashT),
                 originalScale.z);
 
-            if (!hitDetected && elapsed >= halfDuration * 0.5f)
-            {
+            float normalizedTime = elapsed / halfDuration;
+            if (normalizedTime >= activeStart && normalizedTime <= activeEnd)
                 DetectHits();
-                hitDetected = true;
-            }
 
             yield return null;
         }
@@ -94,6 +96,8 @@ public class MeleeWeapon : Weapon
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
         foreach (Collider2D hit in hits)
         {
+            if (hitTargets.Contains(hit)) continue;
+            hitTargets.Add(hit);
             if (hit.TryGetComponent(out IDamageable damageable))
                 damageable.TakeDamage(damage);
         }
