@@ -41,9 +41,9 @@ public class MeleeWeapon : Weapon
             float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
             transform.localRotation = Quaternion.Lerp(startRot, endRot, t);
 
-            // Squash peaks at midpoint
+            // Squash peaks at midpoint (compress length, widen breadth)
             float squashT = Mathf.Sin(t * Mathf.PI);
-            transform.localScale = new Vector3(1f - squashAmount * squashT, 1f + squashAmount * squashT, 1f);
+            transform.localScale = new Vector3(1f + squashAmount * squashT, 1f - squashAmount * squashT, 1f);
 
             if (!hitDetected && elapsed >= halfDuration * 0.5f)
             {
