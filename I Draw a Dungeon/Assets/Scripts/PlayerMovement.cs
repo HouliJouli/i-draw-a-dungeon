@@ -2,8 +2,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, IDamageable
 {
+    [Header("Health")]
+    [SerializeField] private float maxHealth = 100f;
+
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
 
@@ -16,6 +19,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float dashDuration = 0.15f;
     [SerializeField] private float dashCooldown = 1f;
 
+    private float currentHealth;
+
     private Rigidbody2D rb;
     private Vector2 inputDirection;
     private Vector2 lastDirection = Vector2.right;
@@ -23,16 +28,33 @@ public class PlayerMovement : MonoBehaviour
     public float DashCooldownRatio => dashCooldown > 0f ? Mathf.Clamp01(1f - cooldownTimer / dashCooldown) : 1f;
 
     private bool isDashing;
+    private bool isInvincible;
+    public bool IsInvincible => isInvincible;
     private float dashTimer;
     private float cooldownTimer;
 
     private void Awake()
     {
+        currentHealth = maxHealth;
         rb = GetComponent<Rigidbody2D>();
         Physics2D.IgnoreLayerCollision(
             LayerMask.NameToLayer("Projectiles"),
             LayerMask.NameToLayer("Default"),
             true);
+    }
+
+    public void TakeDamage(float amount)
+    {
+        if (isInvincible) { Debug.Log("Damage blocked by invincibility."); return; }
+
+        currentHealth -= amount;
+        Debug.Log($"Player took {amount} damage. HP: {currentHealth}/{maxHealth}");
+
+        if (currentHealth <= 0f)
+        {
+            Debug.Log("Player died.");
+            gameObject.SetActive(false);
+        }
     }
 
     public void OnMove(InputValue value)
@@ -71,6 +93,7 @@ weaponHolder?.CurrentWeapon?.TryAttack();
         if (cooldownTimer > 0f) return;
 
         isDashing = true;
+        isInvincible = true;
         dashTimer = dashDuration;
         cooldownTimer = dashCooldown;
         SetDashInvincibility(true);
@@ -93,6 +116,7 @@ weaponHolder?.CurrentWeapon?.TryAttack();
             if (dashTimer <= 0f)
             {
                 isDashing = false;
+                isInvincible = false;
                 SetDashInvincibility(false);
             }
 
