@@ -7,6 +7,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
 
+    [Header("Weapon")]
+    [SerializeField] private Weapon currentWeapon;
+
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 20f;
     [SerializeField] private float dashDuration = 0.15f;
@@ -33,6 +36,12 @@ public class PlayerMovement : MonoBehaviour
 
         if (inputDirection != Vector2.zero)
             lastDirection = inputDirection;
+    }
+
+    public void OnAttack(InputValue value)
+    {
+        if (!value.isPressed) return;
+        currentWeapon?.TryAttack();
     }
 
     public void OnDash(InputValue value)
