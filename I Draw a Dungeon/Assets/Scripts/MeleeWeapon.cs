@@ -8,7 +8,6 @@ public class MeleeWeapon : Weapon
     [SerializeField] private LayerMask enemyLayers;
 
     [Header("Swing Animation")]
-    [SerializeField] private Transform swordVisual;
     [SerializeField] private float swingAngle = 80f;
     [SerializeField] private float swingDuration = 0.2f;
 
@@ -29,16 +28,15 @@ public class MeleeWeapon : Weapon
         Quaternion startRot = Quaternion.Euler(0f, 0f, swingAngle);
         Quaternion endRot   = Quaternion.Euler(0f, 0f, -swingAngle);
 
-        swordVisual.localRotation = startRot;
+        transform.localRotation = startRot;
 
         // Swing forward
         while (elapsed < halfDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
-            swordVisual.localRotation = Quaternion.Lerp(startRot, endRot, t);
+            transform.localRotation = Quaternion.Lerp(startRot, endRot, t);
 
-            // Hit detection at midpoint
             if (!hitDetected && elapsed >= halfDuration * 0.5f)
             {
                 DetectHits();
@@ -48,7 +46,7 @@ public class MeleeWeapon : Weapon
             yield return null;
         }
 
-        swordVisual.localRotation = endRot;
+        transform.localRotation = endRot;
 
         // Return to original
         elapsed = 0f;
@@ -56,11 +54,11 @@ public class MeleeWeapon : Weapon
         {
             elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
-            swordVisual.localRotation = Quaternion.Lerp(endRot, Quaternion.identity, t);
+            transform.localRotation = Quaternion.Lerp(endRot, Quaternion.identity, t);
             yield return null;
         }
 
-        swordVisual.localRotation = Quaternion.identity;
+        transform.localRotation = Quaternion.identity;
     }
 
     private void DetectHits()
