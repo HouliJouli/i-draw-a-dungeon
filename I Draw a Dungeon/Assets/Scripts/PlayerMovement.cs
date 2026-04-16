@@ -107,6 +107,7 @@ weaponHolder?.CurrentWeapon?.TryAttack();
         int playerLayer = gameObject.layer;
         Physics2D.IgnoreLayerCollision(playerLayer, LayerMask.NameToLayer("Enemies"), active);
         Physics2D.IgnoreLayerCollision(playerLayer, LayerMask.NameToLayer("Projectiles"), active);
+        Physics2D.IgnoreLayerCollision(playerLayer, playerLayer, active);
     }
 
     private void FixedUpdate()

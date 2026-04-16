@@ -21,6 +21,11 @@ public class HandsPivot : MonoBehaviour
     private Vector2 aimInput;
     private Vector2 lastAimDirection = Vector2.right;
 
+    private void Awake()
+    {
+        if (cam == null) cam = Camera.main;
+    }
+
     /// <summary>Direção de mira atual em world space, normalizada.</summary>
     public Vector2 AimDirection => lastAimDirection;
 

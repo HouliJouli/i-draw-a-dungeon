@@ -1,68 +1,78 @@
 using UnityEngine;
 
-/// <summary>
-/// Adjusts the camera orthographic size to fit the entire level based on a BoxCollider2D bounds.
-/// Centers the camera on the level and sizes it so the full area is visible.
-/// </summary>
 [RequireComponent(typeof(Camera))]
 public class CameraFitLevel : MonoBehaviour
 {
+    [Header("Zoom Limits")]
+    [SerializeField] private float minOrthoSize = 5f;
+    [SerializeField] private float maxOrthoSize = 12f;
+    [SerializeField] private float padding = 2f;
+
+    [Header("Bounds")]
     [SerializeField] private BoxCollider2D levelBounds;
-    [SerializeField] private float padding = 1f;
+
+    [Header("Smoothing")]
     [SerializeField] private float smoothSpeed = 3f;
 
     private Camera cam;
-    private float targetOrthoSize;
-    private Vector3 targetPosition;
 
     private void Awake()
     {
         cam = GetComponent<Camera>();
     }
 
-    private void Start()
-    {
-        if (levelBounds == null)
-        {
-            Debug.LogWarning("CameraFitLevel: levelBounds not assigned.");
-            return;
-        }
-
-        SnapToLevel();
-    }
-
     private void LateUpdate()
     {
-        if (levelBounds == null) return;
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
 
-        CalculateTarget();
+        // Filtra players inativos (mortos)
+        int count = 0;
+        Vector2 center = Vector2.zero;
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (!players[i].activeInHierarchy) continue;
+            center += (Vector2)players[i].transform.position;
+            count++;
+        }
 
-        cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, targetOrthoSize, smoothSpeed * Time.deltaTime);
-        transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed * Time.deltaTime);
+        if (count == 0) return;
+
+        center /= count;
+
+        // Maior distância entre qualquer par de players
+        float maxDist = 0f;
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (!players[i].activeInHierarchy) continue;
+            for (int j = i + 1; j < players.Length; j++)
+            {
+                if (!players[j].activeInHierarchy) continue;
+                float dist = Vector2.Distance(players[i].transform.position, players[j].transform.position);
+                if (dist > maxDist) maxDist = dist;
+            }
+        }
+
+        // Converte distância em orthographic size
+        float targetSize = Mathf.Clamp((maxDist / 2f) + padding, minOrthoSize, maxOrthoSize);
+
+        cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, targetSize, smoothSpeed * Time.deltaTime);
+
+        Vector3 targetPos = new Vector3(center.x, center.y, transform.position.z);
+        if (levelBounds != null)
+            targetPos = ClampToBounds(targetPos, cam.orthographicSize);
+
+        transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
     }
 
-    private void CalculateTarget()
+    private Vector3 ClampToBounds(Vector3 position, float orthoSize)
     {
         Bounds b = levelBounds.bounds;
+        float halfH = orthoSize;
+        float halfW = orthoSize * cam.aspect;
 
-        float levelWidth = b.size.x + padding * 2f;
-        float levelHeight = b.size.y + padding * 2f;
+        float clampedX = Mathf.Clamp(position.x, b.min.x + halfW, b.max.x - halfW);
+        float clampedY = Mathf.Clamp(position.y, b.min.y + halfH, b.max.y - halfH);
 
-        float sizeByHeight = levelHeight / 2f;
-        float sizeByWidth = levelWidth / (2f * cam.aspect);
-
-        targetOrthoSize = Mathf.Max(sizeByHeight, sizeByWidth);
-        targetPosition = new Vector3(b.center.x, b.center.y, transform.position.z);
-    }
-
-    /// <summary>
-    /// Instantly snaps the camera to fit the level, skipping smoothing.
-    /// Useful on scene load to avoid a jarring zoom-in animation.
-    /// </summary>
-    public void SnapToLevel()
-    {
-        CalculateTarget();
-        cam.orthographicSize = targetOrthoSize;
-        transform.position = targetPosition;
+        return new Vector3(clampedX, clampedY, position.z);
     }
 }
