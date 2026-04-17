@@ -14,18 +14,41 @@ public class CameraFitLevel : MonoBehaviour
     [Header("Smoothing")]
     [SerializeField] private float smoothSpeed = 3f;
 
+    [Header("Transition Push")]
+    [SerializeField] private ArenaManager arenaManager;
+    [SerializeField] private float maxTransitionOffset = 3f;
+    [SerializeField] private float transitionOffsetSpeed = 1f;
+
     private Camera cam;
+    private float _currentOffset;
+    private bool _inTransition;
 
     private void Awake()
     {
         cam = GetComponent<Camera>();
     }
 
+    private void OnEnable()
+    {
+        if (arenaManager != null)
+            arenaManager.OnArenaStateChanged += OnArenaStateChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (arenaManager != null)
+            arenaManager.OnArenaStateChanged -= OnArenaStateChanged;
+    }
+
+    private void OnArenaStateChanged(ArenaState newState)
+    {
+        _inTransition = newState == ArenaState.Transition;
+    }
+
     private void LateUpdate()
     {
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
 
-        // Filtra players inativos (mortos)
         int count = 0;
         Vector2 center = Vector2.zero;
         for (int i = 0; i < players.Length; i++)
@@ -39,7 +62,6 @@ public class CameraFitLevel : MonoBehaviour
 
         center /= count;
 
-        // Maior distância entre qualquer par de players
         float maxDist = 0f;
         for (int i = 0; i < players.Length; i++)
         {
@@ -52,12 +74,13 @@ public class CameraFitLevel : MonoBehaviour
             }
         }
 
-        // Converte distância em orthographic size
         float targetSize = Mathf.Clamp((maxDist / 2f) + padding, minOrthoSize, maxOrthoSize);
-
         cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, targetSize, smoothSpeed * Time.deltaTime);
 
-        Vector3 targetPos = new Vector3(center.x, center.y, transform.position.z);
+        float targetOffset = _inTransition ? maxTransitionOffset : 0f;
+        _currentOffset = Mathf.Lerp(_currentOffset, targetOffset, transitionOffsetSpeed * Time.deltaTime);
+
+        Vector3 targetPos = new Vector3(center.x + _currentOffset, center.y, transform.position.z);
         if (levelBounds != null)
             targetPos = ClampToBounds(targetPos, cam.orthographicSize);
 

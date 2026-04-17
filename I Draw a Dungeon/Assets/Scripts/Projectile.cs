@@ -54,7 +54,8 @@ public class Projectile : MonoBehaviour
         if (other.TryGetComponent(out IDamageable damageable))
             damageable.TakeDamage(damage);
 
-        if (other.TryGetComponent(out HitEffect hitEffect))
+        HitEffect hitEffect = other.GetComponentInParent<HitEffect>();
+        if (hitEffect != null)
             hitEffect.TriggerHit(transform.position);
 
         Destroy(gameObject);

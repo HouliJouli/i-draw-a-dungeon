@@ -105,6 +105,101 @@ Victory
 
   → Isso cria o "fechamento" do battle royale
 
+4.6 Arena Transition System (CRÍTICO)
+
+  Sistema responsável por simular o fechamento da zona através da transição física entre arenas conectadas.
+  Substitui o dano contínuo do Zone System original pela Spike Wall (morte instantânea por contato).
+
+  Estrutura Geral:
+    A dungeon é composta por múltiplas arenas fixas (sem geração procedural)
+    Cada arena é uma cena independente
+    Arenas são conectadas linearmente através de portas
+    A progressão sempre ocorre de uma arena maior para uma menor
+
+  4.6.1 Arena Layout
+    Arenas possuem tamanho decrescente
+    Primeira arena:
+      Maior espaço
+      Maior densidade de loot
+      Menor pressão inicial
+    Arenas subsequentes:
+      Menores
+      Mais intensas
+      Menor espaço de evasão
+
+    Intenção de design:
+      Criar sensação de "afunilamento"
+      Forçar encontros mais frequentes
+
+  4.6.2 Door System (Portas)
+    Cada arena possui portas que conectam à próxima
+    Estados das portas:
+      Locked (fechadas)
+      Open (abertas)
+    Regras:
+      Portas começam fechadas
+      Permanecem fechadas durante a fase normal da arena
+      Abrem apenas no momento de transição
+
+  4.6.3 Arena Timer
+    Cada arena possui um tempo de permanência
+    Estados:
+      Safe Phase — jogadores exploram livremente, spawn de inimigos normal
+      Warning Phase — feedback visual/sonoro, preparação para transição
+      Transition Phase — porta abre, Spike Wall inicia movimento
+
+  4.6.4 Spike Wall (Zona Ativa)
+    Elemento principal do sistema — substitui o dano de zona
+    Comportamento:
+      Surge na borda esquerda da arena
+      Move continuamente para a direita
+      Velocidade constante (ou progressivamente crescente)
+    Regras:
+      Contato = morte instantânea (one-hit kill)
+      Não pode ser atravessada
+      Empurra implicitamente o jogador para frente
+
+  4.6.5 Arena Transition Flow
+    Sequência exata:
+      1. Timer da arena termina
+      2. Portas se abrem
+      3. Spike Wall começa a se mover
+      4. Spawn de inimigos aumenta
+      5. Jogadores são forçados a migrar
+      6. Câmera começa a acompanhar o movimento da parede
+      7. Jogadores entram na nova arena
+      8. Spike Wall fecha completamente a arena anterior
+      9. Cena anterior é descarregada
+
+  4.6.6 Enemy Pressure Scaling
+    Durante a transição:
+      Spawn rate aumenta significativamente
+      Tipos de inimigos podem mudar (mais agressivos)
+    Regra importante:
+      Inimigos são bound à arena de origem — NÃO atravessam portas
+    Efeito de design:
+      Pressão atrás (PvE) + Pressão à frente (PvP)
+
+  4.6.7 Camera Behavior durante Transição
+    Câmera continua sendo shared (mesma lógica de 4.4)
+    Durante a transição:
+      É levemente "empurrada" pela Spike Wall
+      Prioriza manter todos os jogadores visíveis
+      Gradualmente revela a próxima arena
+    Intenção de design:
+      Comunica urgência sem HUD
+      Evita que jogador "fique parado"
+
+  4.6.8 Scene Streaming
+    Cada arena é uma cena independente (Unity Additive Scene Loading)
+    Durante a transição:
+      Próxima arena é carregada em paralelo (additive)
+    Após fechamento completo da Spike Wall:
+      Arena anterior é descarregada
+    Benefícios:
+      Performance
+      Escalabilidade
+
 5. PLAYER STATE
   HP
   Arma ativa
@@ -379,3 +474,73 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
   Clamp de posição por BoxCollider2D (levelBounds): câmera nunca mostra fora dos limites do nível
   Suavização via Lerp com smoothSpeed configurável
   Fallback: se nenhum player ativo, câmera mantém posição/zoom atual
+
+  Transition Push (extensão do CameraFitLevel):
+    Referencia ArenaManager e escuta OnArenaStateChanged
+    Quando estado = Transition:
+      _currentOffset cresce suavemente via Lerp até maxTransitionOffset (em unidades do mundo, eixo X positivo)
+      Velocidade de crescimento controlada por transitionOffsetSpeed
+    Quando estado ≠ Transition:
+      _currentOffset retorna suavemente a 0
+    targetPos final = center dos players + Vector3(currentOffset, 0, 0)
+    Clamp de bounds aplicado após o offset — câmera nunca sai dos limites do nível
+    Campos: maxTransitionOffset, transitionOffsetSpeed
+    Diferença entre campos:
+      smoothSpeed → velocidade de seguimento dos players (atraso geral da câmera)
+      maxTransitionOffset → distância máxima do deslocamento lateral durante transição
+      transitionOffsetSpeed → velocidade com que o offset lateral cresce/diminui
+
+8.14 Arena Transition System — Implementação Técnica
+
+  ArenaManager (script):
+    State machine com enum ArenaState: Safe → Warning → Transition → Completed
+    Timer por estado (safeDuration, warningDuration, transitionDuration) configurável no Inspector
+    Avança automaticamente entre estados ao zerar o timer
+    Evento público: System.Action<ArenaState> OnArenaStateChanged
+      → todos os sistemas da arena se inscrevem nesse evento (porta, parede, câmera)
+    Completed para o loop — sem transição além dele
+    Campos: safeDuration, warningDuration, transitionDuration
+
+  DoorController (script):
+    Estados internos: Closed (collider ativo) / Open (collider desativo)
+    Começa fechada no Start
+    Escuta OnArenaStateChanged do ArenaManager via OnEnable/OnDisable
+    Ao estado Transition → chama OpenDoor()
+    Animação de abertura: deslize + fade simultâneos via Coroutine
+      slideDirection: Vector2 configurável (ex: (0,1) = cima, (1,0) = direita)
+      slideDistance: distância total percorrida até sumir
+      animationDuration: duração da animação em segundos
+      slideCurve: AnimationCurve para controle de aceleração (padrão EaseInOut)
+    Porta some completamente ao final (alpha = 0, posição = closedPos + offset)
+    CloseDoor() reseta posição e alpha instantaneamente
+    Eventos públicos: OnDoorOpened, OnDoorClosed (usados pelo DoorIndicator)
+    Campos: slideDirection, slideDistance, animationDuration, slideCurve
+
+  DoorIndicator (script — HUD):
+    Componente no objeto de seta dentro do Canvas (Screen Space - Overlay)
+    Referencia DoorController, Camera e RectTransform da seta
+    Escuta OnDoorOpened / OnDoorClosed via OnEnable/OnDisable
+    Lógica por frame:
+      Converte posição da porta para viewport
+      Se fora da tela: exibe seta na borda da tela apontando para a porta
+      Se visível: oculta a seta
+    Posicionamento na borda: clamp proporcional ao halfW/halfH da tela
+    Tratamento de porta atrás da câmera (viewport.z < 0): inverte direção
+    Rotação: angle = Atan2(direction) − 90° + rotationOffset (ajustável no Inspector)
+    Pulse: offset senoidal (Sin * pulseDistance) somado à edgePos antes de setar posição
+    Campos: screenEdgePadding, pulseDistance, pulseSpeed, rotationOffset
+
+  SpikeWallController (script):
+    Começa inativo: Collider2D e SpriteRenderer desabilitados no Awake
+    Escuta OnArenaStateChanged do ArenaManager via OnEnable/OnDisable
+    Ao estado Transition → Activate():
+      Habilita Collider2D e SpriteRenderer
+      Liga flag _moving
+    Movimento em FixedUpdate: rb.MovePosition na direção Vector2.right * moveSpeed
+      Fallback para transform.position se não houver Rigidbody2D
+    Rigidbody2D configurado como Kinematic, gravityScale = 0
+    Colisão via OnTriggerEnter2D (collider deve ser Is Trigger):
+      Player (PlayerMovement): SetActive(false) direto — bypassa invencibilidade do dash
+      Inimigos (IDamageable): TakeDamage(float.MaxValue) — morte instantânea
+      GetComponentInParent usado em ambos os casos (suporta hierarquia com filhos)
+    Campos: arenaManager, moveSpeed, wallCollider, wallSprite
