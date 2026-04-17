@@ -153,13 +153,23 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     postDashInvincibility: janela de invencibilidade após o dash terminar
   IsKnockedBack: flag que pausa rb.linearVelocity durante knockback (PvP e PvE)
 
-8.2 Sistema de Mira
+8.2 Sistema de Mira e Acoplamento de Armas
   HandsPivot: objeto filho do player que rotaciona em direção ao alvo
   Suavização de rotação configurável
-  Flip automático quando mira está à esquerda
+  Flip automático quando mira está à esquerda (localScale.y = -1)
   Sway (balanço) baseado na velocidade angular de rotação
   Dois weapon slots: RightWeaponSlot e LeftWeaponSlot
   AimDirection: propriedade pública com a direção de mira atual (usada por RangedWeapon)
+
+  HandsPivot como camada de acoplamento (Weapon Holding Layer):
+    HandsPivot funciona como uma camada invisível maior que o player
+    Seu Transform Scale define o "raio" de acoplamento:
+      Scale maior → armas aparecem mais distantes do centro do player
+      Scale menor → armas aparecem mais próximas
+    weaponSlot é filho do HandsPivot com localPosition (x, 0, 0) como ponto de ancoragem
+    A arma equipada tem sempre localPosition = (0,0,0) — sem offset baked no prefab
+    Resultado: armas de qualquer tamanho se comportam uniformemente;
+      o ajuste de distância é feito uma vez no HandsPivot, não prefab a prefab
 
   Input de mira por player (sem Mouse.current global):
     OnLook(InputValue) recebe Vector2 via PlayerInput (Send Messages)
@@ -186,6 +196,8 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     Instancia o prefab como filho do weaponSlot
     Equipa uma arma padrão no Start (defaultWeaponPrefab)
     Troca de arma destrói a anterior e instancia a nova
+    Ao equipar, força localPosition = Vector3.zero e localRotation = Quaternion.identity
+      → garante que a arma sempre parte do centro do weaponSlot, independente do prefab
 
   ShortSword (MeleeWeapon):
     Animação de swing em arco via rotação do transform
@@ -233,6 +245,15 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     Duração e força do knockback configuráveis
     Seta IsKnockedBack em Enemy e PlayerMovement durante o knockback
   Hit stop na arma melee ao confirmar hit (WaitForSecondsRealtime)
+
+  SpriteRenderer desacoplado do objeto raiz do player:
+    O sprite do player pode estar num GameObject filho (ex: "Body") separado do raiz
+    HitEffect fica no raiz do player (junto com Rigidbody2D e Collider)
+    SpriteRenderer é exposto como campo serializável [SerializeField] no HitEffect
+      → deve ser preenchido no Inspector apontando para o objeto filho com o sprite
+    Fallback automático: se não preenchido, busca GetComponent → GetComponentInChildren
+    Essa separação permite animar, escalar ou trocar o sprite independentemente
+      sem afetar física, colisão ou lógica do player
 
 8.6 UI
   DashUI:

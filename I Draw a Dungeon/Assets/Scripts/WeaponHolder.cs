@@ -21,6 +21,8 @@ public class WeaponHolder : MonoBehaviour
             Destroy(CurrentWeapon.gameObject);
 
         GameObject instance = Instantiate(prefab, weaponSlot);
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
         CurrentWeapon = instance.GetComponent<Weapon>();
     }
 

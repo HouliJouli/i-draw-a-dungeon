@@ -15,7 +15,7 @@ public class HitEffect : MonoBehaviour
     [SerializeField] private float knockbackForce = 5f;
     [SerializeField] private float knockbackDuration = 0.1f;
 
-    private SpriteRenderer sr;
+    [SerializeField] private SpriteRenderer sr;
     private Rigidbody2D rb;
     private Color originalColor;
     private Vector3 originalScale;
@@ -23,7 +23,7 @@ public class HitEffect : MonoBehaviour
 
     private void Awake()
     {
-        sr = GetComponent<SpriteRenderer>();
+        if (sr == null) sr = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         if (sr != null) originalColor = sr.color;
         originalScale = transform.localScale;
