@@ -11,6 +11,8 @@ public class CameraFitLevel : MonoBehaviour
     [Header("Bounds")]
     [SerializeField] private BoxCollider2D levelBounds;
 
+    private BoxCollider2D _transitionBounds;
+
     [Header("Smoothing")]
     [SerializeField] private float smoothSpeed = 3f;
 
@@ -43,10 +45,7 @@ public class CameraFitLevel : MonoBehaviour
     private void OnArenaStateChanged(ArenaState newState)
     {
         if (newState == ArenaState.Transition)
-        {
             _inTransition = true;
-            levelBounds = null;
-        }
     }
 
     public void SetBounds(BoxCollider2D newBounds)
@@ -54,6 +53,11 @@ public class CameraFitLevel : MonoBehaviour
         levelBounds = newBounds;
         _inTransition = false;
         Debug.Log($"[CameraFitLevel] Bounds trocados para: {(newBounds != null ? newBounds.gameObject.scene.name : "null")}");
+    }
+
+    public void SetTransitionBounds(BoxCollider2D newTransitionBounds)
+    {
+        _transitionBounds = newTransitionBounds;
     }
 
     public void ClearBounds()
@@ -97,15 +101,17 @@ public class CameraFitLevel : MonoBehaviour
         _currentOffset = Mathf.Lerp(_currentOffset, targetOffset, transitionOffsetSpeed * Time.deltaTime);
 
         Vector3 targetPos = new Vector3(center.x + _currentOffset, center.y, transform.position.z);
-        if (levelBounds != null)
-            targetPos = ClampToBounds(targetPos, cam.orthographicSize);
+
+        BoxCollider2D boundsToUse = _inTransition ? _transitionBounds : levelBounds;
+        if (boundsToUse != null)
+            targetPos = ClampToBounds(targetPos, cam.orthographicSize, boundsToUse);
 
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
     }
 
-    private Vector3 ClampToBounds(Vector3 position, float orthoSize)
+    private Vector3 ClampToBounds(Vector3 position, float orthoSize, BoxCollider2D boundsCollider)
     {
-        Bounds b = levelBounds.bounds;
+        Bounds b = boundsCollider.bounds;
         float halfH = orthoSize;
         float halfW = orthoSize * cam.aspect;
 

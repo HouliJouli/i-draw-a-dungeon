@@ -116,6 +116,9 @@ public class ArenaLoader : MonoBehaviour
         if (cameraFit != null && content.CameraBounds != null)
             cameraFit.SetBounds(content.CameraBounds);
 
+        if (cameraFit != null)
+            cameraFit.SetTransitionBounds(content.TransitionBounds);
+
         if (doorIndicator != null && content.Door != null)
             doorIndicator.SetDoor(content.Door);
 
@@ -134,6 +137,7 @@ public class ArenaLoader : MonoBehaviour
         _currentSpikeWall = content.SpikeWall;
         if (_currentSpikeWall != null)
             _currentSpikeWall.OnWallReachedEnd += OnWallReachedEnd;
+
 
         Debug.Log($"[ArenaLoader] SpikeWall atualizada: {sceneName}");
     }
