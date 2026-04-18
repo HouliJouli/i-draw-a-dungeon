@@ -182,13 +182,17 @@ Victory
 
   4.6.7 Camera Behavior durante Transição
     Câmera continua sendo shared (mesma lógica de 4.4)
-    Durante a transição:
-      É levemente "empurrada" pela Spike Wall
-      Prioriza manter todos os jogadores visíveis
-      Gradualmente revela a próxima arena
+    Durante a transição (SpikeWall em movimento):
+      Continua seguindo os jogadores normalmente com zoom dinâmico
+      Confinada pelo TransitionBounds — um bounds maior que cobre as duas arenas
+      Jogadores podem ver tanto a arena atual quanto a próxima enquanto se movem
+    Quando a SpikeWall termina seu trajeto:
+      Câmera transita suavemente do TransitionBounds para o CameraBounds da nova arena
+      A transição de bounds é interpolada para evitar corte abrupto
     Intenção de design:
       Comunica urgência sem HUD
       Evita que jogador "fique parado"
+      Permite visibilidade da nova arena durante a travessia — o jogador sabe para onde fugir
 
   4.6.8 Scene Streaming
     Cada arena é uma cena independente (Unity Additive Scene Loading)
@@ -494,9 +498,22 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
   Zoom dinâmico baseado na maior distância entre qualquer par de players:
     orthographicSize = Clamp(maxDist / 2 + padding, minOrthoSize, maxOrthoSize)
   Players mortos (inativos) são ignorados no cálculo
-  Clamp de posição por BoxCollider2D (levelBounds): câmera nunca mostra fora dos limites do nível
-  Suavização via Lerp com smoothSpeed configurável
+  Clamp de posição por BoxCollider2D (levelBounds ou transitionBounds): câmera nunca mostra fora dos limites ativos
+  Suavização via SmoothDamp (posição e zoom) — sem overshoot nos limites do nível
   Fallback: se nenhum player ativo, câmera mantém posição/zoom atual
+  Campos: minOrthoSize, maxOrthoSize, padding, smoothTime
+
+  TransitionBounds (extensão do CameraFitLevel):
+    Cada arena possui um BoxCollider2D extra (TransitionBounds) que cobre o espaço da arena atual + próxima
+    Definido em cada cena de arena e registrado via ArenaContent.TransitionBounds
+    Ao estado Transition: câmera passa a usar o TransitionBounds como clamp em vez do levelBounds
+      → permite que a câmera siga os jogadores para dentro da próxima arena
+    Quando SpikeWall termina e SetBounds(arena nova) é chamado:
+      CameraFitLevel cacheia o Bounds atual (TransitionBounds como struct) antes do unload da cena
+      Inicia interpolação suave (MoveTowards) entre TransitionBounds → CameraBounds da nova arena
+      Velocidade configurável via boundsTransitionSpeed no Inspector
+    TransitionBounds deve ser marcado como Is Trigger para não interferir na física
+    Última arena não precisa de TransitionBounds (campo vazio = câmera livre durante eventual Transition)
 
   Transition Push (extensão do CameraFitLevel):
     Referencia ArenaManager e escuta OnArenaStateChanged
@@ -506,12 +523,8 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     Quando estado ≠ Transition:
       _currentOffset retorna suavemente a 0
     targetPos final = center dos players + Vector3(currentOffset, 0, 0)
-    Clamp de bounds aplicado após o offset — câmera nunca sai dos limites do nível
+    Clamp de bounds aplicado após o offset
     Campos: maxTransitionOffset, transitionOffsetSpeed
-    Diferença entre campos:
-      smoothSpeed → velocidade de seguimento dos players (atraso geral da câmera)
-      maxTransitionOffset → distância máxima do deslocamento lateral durante transição
-      transitionOffsetSpeed → velocidade com que o offset lateral cresce/diminui
 
 8.14 Arena Transition System — Implementação Técnica (completa)
 
@@ -570,8 +583,10 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
 
   ArenaContent (script — em cada arena):
     Registro local dos sistemas de uma arena
-    Campos serializados: SpikeWallController, DoorController, BoxCollider2D (CameraBounds)
-    Propriedades públicas readonly: SpikeWall, Door, CameraBounds
+    Campos serializados: SpikeWallController, DoorController, BoxCollider2D (CameraBounds), BoxCollider2D (TransitionBounds)
+    Propriedades públicas readonly: SpikeWall, Door, CameraBounds, TransitionBounds
+    TransitionBounds: BoxCollider2D que cobre esta arena + a próxima; deve ser Is Trigger
+      Arrastado para o campo via Inspector; última arena deixa o campo vazio
     Colocado num GameObject vazio na raiz de cada cena de arena
     Não possui lógica — é apenas um container de referências para o ArenaLoader
 
@@ -585,6 +600,7 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
       3. Descarrega arena anterior
       4. Chama RegisterArenaContent(nextScene):
            SetBounds → atualiza CameraFitLevel com o CameraBounds da nova arena
+           SetTransitionBounds → atualiza CameraFitLevel com o TransitionBounds da nova arena
            SetDoor → atualiza DoorIndicator com a DoorController da nova arena
            Subscreve OnWallReachedEnd da nova SpikeWall
     Proteções: _loadingInProgress impede execução dupla; verifica isLoaded antes de load/unload
@@ -607,6 +623,9 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     Update verifica door == null (porta destruída ao descarregar cena) e esconde seta automaticamente
 
   CameraFitLevel — atualização cross-scene:
-    SetBounds(BoxCollider2D): troca levelBounds e desativa _inTransition
+    SetBounds(BoxCollider2D): troca levelBounds, desativa _inTransition e inicia lerp suave de bounds
+      Se vinha de uma transição: cacheia TransitionBounds como struct (antes do unload) e interpola para o novo levelBounds
+    SetTransitionBounds(BoxCollider2D): atualiza o bounds de transição da arena atual
     ClearBounds(): zera levelBounds (câmera livre)
-    Durante _inTransition: levelBounds é nulo, câmera segue players livremente entre arenas
+    Durante _inTransition: câmera usa _transitionBounds como clamp — segue players entre as duas arenas
+    Ao entrar em Transition: _cachedTransitionBounds salva Bounds como struct — imune ao unload da cena
