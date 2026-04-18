@@ -173,12 +173,13 @@ Victory
 
   4.6.6 Enemy Pressure Scaling
     Durante a transição:
-      Spawn rate aumenta significativamente
-      Tipos de inimigos podem mudar (mais agressivos)
+      EnemySpawner detecta ArenaState.Transition e troca automaticamente para Modo Transição
+      Spawn rate aumenta (cooldown menor, mais inimigos por wave)
+      Spawner é destruído pela SpikeWall ao ser alcançado — impede spawn contínuo após a arena fechar
     Regra importante:
       Inimigos são bound à arena de origem — NÃO atravessam portas
     Efeito de design:
-      Pressão atrás (PvE) + Pressão à frente (PvP)
+      Pressão atrás (PvE crescente + Spike Wall) + Pressão à frente (PvP na nova arena)
 
   4.6.7 Camera Behavior durante Transição
     Câmera continua sendo shared (mesma lógica de 4.4)
@@ -463,10 +464,32 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
   Componente independente adicionado a um GameObject vazio na cena
   Usa BoxCollider2D como área de spawn (bounds)
   Spawn inicial: spawna initialEnemyCount inimigos no Start em posições aleatórias dentro dos bounds
-  Wave Spawn (opcional, toggle no Inspector):
-    A cada waveCooldown segundos, spawna enemiesPerWave inimigos
+
+  Dois modos de operação baseados no estado da arena:
+
+  Modo Normal (Safe / Warning):
+    Wave Spawn com normalWaveCooldown e normalEnemiesPerWave
     Pode ser desligado via enableWaveSpawn sem alterar os valores
-  Campos expostos: enemyPrefab, spawnArea, initialEnemyCount, enableWaveSpawn, waveCooldown, enemiesPerWave
+
+  Modo Transição (Transition):
+    Ativado automaticamente ao receber ArenaState.Transition via OnArenaStateChanged
+    Aumenta pressão: usa transitionWaveCooldown e transitionEnemiesPerWave
+    Timer de wave é resetado imediatamente ao entrar no modo
+    Ao sair de Transition (qualquer outro estado): volta ao Modo Normal e reseta o timer
+
+  Integração com ArenaManager:
+    Referencia ArenaManager (buscado via FindAnyObjectByType no Start se não preenchido)
+    Inscreve/desincreve OnArenaStateChanged via Start/OnDisable
+    Flag inTransitionMode controla qual conjunto de parâmetros está ativo
+    Sem coroutines — troca de modo é imediata via flag + reset de timer no Update
+
+  Destruição pela SpikeWall:
+    SpikeWallController detecta EnemySpawner via GetComponentInParent no OnTriggerEnter2D
+    Ao colidir: Destroy(spawner.gameObject) — impede spawn de novos inimigos após a transição
+    Requer que o spawner tenha um Collider2D para ser detectado
+
+  Campos expostos: enemyPrefab, spawnArea, arenaManager, initialEnemyCount, enableWaveSpawn,
+    normalWaveCooldown, normalEnemiesPerWave, transitionWaveCooldown, transitionEnemiesPerWave
 
 8.11 PlayerSpawner
   Componente independente adicionado a um GameObject vazio na cena

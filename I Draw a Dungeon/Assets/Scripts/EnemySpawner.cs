@@ -3,25 +3,43 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Setup")]
+    [SerializeField] private ArenaManager arenaManager;
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private BoxCollider2D spawnArea;
 
     [Header("Initial Spawn")]
     [SerializeField] private int initialEnemyCount = 5;
 
-    [Header("Wave Spawn")]
+    [Header("Normal Mode (Safe / Warning)")]
     [SerializeField] private bool enableWaveSpawn = true;
-    [SerializeField] private float waveCooldown = 10f;
-    [SerializeField] private int enemiesPerWave = 3;
+    [SerializeField] private float normalWaveCooldown = 10f;
+    [SerializeField] private int normalEnemiesPerWave = 3;
+
+    [Header("Transition Mode")]
+    [SerializeField] private float transitionWaveCooldown = 4f;
+    [SerializeField] private int transitionEnemiesPerWave = 6;
 
     private float waveTimer;
+    private bool inTransitionMode;
 
     private void Start()
     {
+        if (arenaManager == null)
+            arenaManager = FindAnyObjectByType<ArenaManager>();
+
+        if (arenaManager != null)
+            arenaManager.OnArenaStateChanged += OnArenaStateChanged;
+
         for (int i = 0; i < initialEnemyCount; i++)
             Spawn();
 
-        waveTimer = waveCooldown;
+        waveTimer = normalWaveCooldown;
+    }
+
+    private void OnDisable()
+    {
+        if (arenaManager != null)
+            arenaManager.OnArenaStateChanged -= OnArenaStateChanged;
     }
 
     private void Update()
@@ -32,10 +50,27 @@ public class EnemySpawner : MonoBehaviour
 
         if (waveTimer <= 0f)
         {
-            for (int i = 0; i < enemiesPerWave; i++)
+            int count = inTransitionMode ? transitionEnemiesPerWave : normalEnemiesPerWave;
+            for (int i = 0; i < count; i++)
                 Spawn();
 
-            waveTimer = waveCooldown;
+            waveTimer = inTransitionMode ? transitionWaveCooldown : normalWaveCooldown;
+        }
+    }
+
+    private void OnArenaStateChanged(ArenaState newState)
+    {
+        if (newState == ArenaState.Transition)
+        {
+            inTransitionMode = true;
+            waveTimer = transitionWaveCooldown;
+            Debug.Log("[EnemySpawner] Modo Transição ativado — pressão aumentada.");
+        }
+        else if (inTransitionMode)
+        {
+            inTransitionMode = false;
+            waveTimer = normalWaveCooldown;
+            Debug.Log($"[EnemySpawner] Modo Normal restaurado ({newState}).");
         }
     }
 
