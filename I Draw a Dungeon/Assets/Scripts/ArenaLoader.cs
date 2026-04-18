@@ -92,6 +92,15 @@ public class ArenaLoader : MonoBehaviour
         // registra conteúdo da nova arena após Arena1 ser descarregada
         yield return RegisterArenaContent(nextScene);
 
+        Scene newScene = SceneManager.GetSceneByName(nextScene);
+        ArenaContent newContent = FindArenaContent(newScene);
+        bool isLastArena = newContent == null || newContent.SpikeWall == null;
+
+        if (!isLastArena && arenaManager != null)
+            arenaManager.Restart();
+        else
+            Debug.Log("[ArenaLoader] Última arena detectada — ArenaManager não reinicia.");
+
         _loadingInProgress = false;
     }
 

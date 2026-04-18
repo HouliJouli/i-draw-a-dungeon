@@ -45,6 +45,12 @@ public class ArenaManager : MonoBehaviour
         }
     }
 
+    public void Restart()
+    {
+        Debug.Log("[ArenaManager] Reiniciando para nova arena.");
+        EnterState(ArenaState.Safe);
+    }
+
     private void EnterState(ArenaState newState)
     {
         CurrentState = newState;

@@ -556,8 +556,9 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     Timer por estado (safeDuration, warningDuration, transitionDuration) configurável no Inspector
     Avança automaticamente entre estados ao zerar o timer
     Evento público: System.Action<ArenaState> OnArenaStateChanged
-      → todos os sistemas da arena se inscrevem nesse evento (porta, parede, câmera)
+      → todos os sistemas da arena se inscrevem nesse evento (porta, parede, câmera, feedback visual)
     Completed para o loop — sem transição além dele
+    Restart(): reinicia o ciclo a partir de Safe — chamado pelo ArenaLoader ao registrar nova arena
     Campos: safeDuration, warningDuration, transitionDuration
 
   DoorController (script):
@@ -588,6 +589,23 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     Rotação: angle = Atan2(direction) − 90° + rotationOffset (ajustável no Inspector)
     Pulse: offset senoidal (Sin * pulseDistance) somado à edgePos antes de setar posição
     Campos: screenEdgePadding, pulseDistance, pulseSpeed, rotationOffset
+
+  ArenaStateFeedback (script — PersistentScene / Canvas):
+    Feedback visual de tela inteira que reage aos estados do ArenaManager
+    Escuta OnArenaStateChanged via Start/OnDisable (único ArenaManager do PersistentScene)
+    Componentes necessários no Canvas:
+      Image fullscreen (stretch/stretch, Raycast Target = false) → overlayImage
+      TextMeshProUGUI centralizado (opcional) → stateLabel
+    Comportamento por estado:
+      Safe      → overlay transparente, sem texto (fade suave)
+      Warning   → tint laranja/amarelo configurável + texto "Get Ready"
+      Transition → tint vermelho configurável + texto "RUN"
+      Completed → volta para Safe (limpa o overlay ao fim de cada arena)
+    Transição de cor: Color.Lerp por frame via fadeSpeed — sem coroutines
+    stateLabel desabilitado automaticamente quando o texto é vazio
+    Todas as cores e textos são configuráveis no Inspector
+    Campos: arenaManager, overlayImage, stateLabel, safeColor, warningColor, transitionColor,
+      safeText, warningText, transitionText, fadeSpeed
 
   SpikeWallController (script):
     Começa inativo: Collider2D e SpriteRenderer desabilitados no Awake
@@ -626,6 +644,8 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
            SetTransitionBounds → atualiza CameraFitLevel com o TransitionBounds da nova arena
            SetDoor → atualiza DoorIndicator com a DoorController da nova arena
            Subscreve OnWallReachedEnd da nova SpikeWall
+      5. Detecta última arena: se ArenaContent.SpikeWall == null → não reinicia ArenaManager
+         Caso contrário: chama ArenaManager.Restart() para iniciar o ciclo da nova arena
     Proteções: _loadingInProgress impede execução dupla; verifica isLoaded antes de load/unload
 
   GameBootstrap (script — PersistentScene):
