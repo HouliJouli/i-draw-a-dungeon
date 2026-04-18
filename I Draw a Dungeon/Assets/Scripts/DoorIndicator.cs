@@ -24,20 +24,35 @@ public class DoorIndicator : MonoBehaviour
 
     private void OnEnable()
     {
-        if (door != null)
-        {
-            door.OnDoorOpened += HandleDoorOpened;
-            door.OnDoorClosed += HandleDoorClosed;
-        }
+        SubscribeToDoor(door);
     }
 
     private void OnDisable()
     {
-        if (door != null)
-        {
-            door.OnDoorOpened -= HandleDoorOpened;
-            door.OnDoorClosed -= HandleDoorClosed;
-        }
+        UnsubscribeFromDoor(door);
+    }
+
+    public void SetDoor(DoorController newDoor)
+    {
+        UnsubscribeFromDoor(door);
+        door = newDoor;
+        SubscribeToDoor(door);
+        _doorOpen = false;
+        SetArrowVisible(false);
+    }
+
+    private void SubscribeToDoor(DoorController target)
+    {
+        if (target == null) return;
+        target.OnDoorOpened += HandleDoorOpened;
+        target.OnDoorClosed += HandleDoorClosed;
+    }
+
+    private void UnsubscribeFromDoor(DoorController target)
+    {
+        if (target == null) return;
+        target.OnDoorOpened -= HandleDoorOpened;
+        target.OnDoorClosed -= HandleDoorClosed;
     }
 
     private void Start()
@@ -52,6 +67,13 @@ public class DoorIndicator : MonoBehaviour
 
     private void Update()
     {
+        if (door == null)
+        {
+            _doorOpen = false;
+            SetArrowVisible(false);
+            return;
+        }
+
         if (!_doorOpen) return;
 
         Vector3 viewport = targetCamera.WorldToViewportPoint(_doorWorldPosition);

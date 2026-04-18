@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class SpikeWallController : MonoBehaviour
@@ -8,8 +9,15 @@ public class SpikeWallController : MonoBehaviour
     [SerializeField] private Collider2D wallCollider;
     [SerializeField] private SpriteRenderer wallSprite;
 
+    [Header("End Boundary")]
+    [Tooltip("Posição X que representa o limite direito da arena. Ao chegar aqui, a parede sinaliza fim.")]
+    [SerializeField] private float endBoundaryX = 30f;
+
+    public event Action OnWallReachedEnd;
+
     private Rigidbody2D rb;
     private bool _moving;
+    private bool _reachedEnd;
 
     private void Awake()
     {
@@ -24,8 +32,11 @@ public class SpikeWallController : MonoBehaviour
         if (wallSprite != null) wallSprite.enabled = false;
     }
 
-    private void OnEnable()
+    private void Start()
     {
+        if (arenaManager == null)
+            arenaManager = FindAnyObjectByType<ArenaManager>();
+
         if (arenaManager != null)
             arenaManager.OnArenaStateChanged += OnArenaStateChanged;
     }
@@ -38,12 +49,20 @@ public class SpikeWallController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!_moving) return;
+        if (!_moving || _reachedEnd) return;
 
         if (rb != null)
             rb.MovePosition(rb.position + Vector2.right * moveSpeed * Time.fixedDeltaTime);
         else
             transform.position += Vector3.right * moveSpeed * Time.fixedDeltaTime;
+
+        if (transform.position.x >= endBoundaryX)
+        {
+            _reachedEnd = true;
+            _moving = false;
+            Debug.Log("[SpikeWallController] Parede atingiu o limite da arena.");
+            OnWallReachedEnd?.Invoke();
+        }
     }
 
     private void OnArenaStateChanged(ArenaState newState)

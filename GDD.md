@@ -194,11 +194,34 @@ Victory
     Cada arena é uma cena independente (Unity Additive Scene Loading)
     Durante a transição:
       Próxima arena é carregada em paralelo (additive)
+      Ambas as arenas coexistem na memória durante a travessia
     Após fechamento completo da Spike Wall:
       Arena anterior é descarregada
     Benefícios:
       Performance
+      Travessia fluida estilo Metroidvania (sem loading screen)
       Escalabilidade
+
+  4.6.9 Persistent Scene
+    Sistemas que nunca devem ser destruídos ficam numa cena separada (PersistentScene)
+    Carregada como cena principal (índice 0 no Build Profile)
+    Carrega a primeira arena automaticamente via GameBootstrap
+    Conteúdo da PersistentScene:
+      ArenaManager
+      ArenaLoader
+      Camera (CameraFitLevel)
+      PlayerSpawner
+      Canvas / HUD (DoorIndicator, DashUI)
+      Global Light 2D
+      EventSystem
+    Conteúdo de cada arena (Arena1, Arena2, ...):
+      Tilemaps (chão, paredes, decoração)
+      CameraBounds (BoxCollider2D)
+      Door (DoorController)
+      SpikeWall (SpikeWallController)
+      EnemySpawners
+      ArenaContent (registro local dos sistemas da arena)
+      Loot e props
 
 5. PLAYER STATE
   HP
@@ -490,7 +513,7 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
       maxTransitionOffset → distância máxima do deslocamento lateral durante transição
       transitionOffsetSpeed → velocidade com que o offset lateral cresce/diminui
 
-8.14 Arena Transition System — Implementação Técnica
+8.14 Arena Transition System — Implementação Técnica (completa)
 
   ArenaManager (script):
     State machine com enum ArenaState: Safe → Warning → Transition → Completed
@@ -544,3 +567,46 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
       Inimigos (IDamageable): TakeDamage(float.MaxValue) — morte instantânea
       GetComponentInParent usado em ambos os casos (suporta hierarquia com filhos)
     Campos: arenaManager, moveSpeed, wallCollider, wallSprite
+
+  ArenaContent (script — em cada arena):
+    Registro local dos sistemas de uma arena
+    Campos serializados: SpikeWallController, DoorController, BoxCollider2D (CameraBounds)
+    Propriedades públicas readonly: SpikeWall, Door, CameraBounds
+    Colocado num GameObject vazio na raiz de cada cena de arena
+    Não possui lógica — é apenas um container de referências para o ArenaLoader
+
+  ArenaLoader (script — PersistentScene):
+    Gerencia o ciclo de vida das arenas durante a partida
+    Campos: ArenaManager, CameraFitLevel, DoorIndicator, string[] arenaSceneNames
+    No Start: registra o ArenaContent da primeira arena (já carregada pelo GameBootstrap)
+    Ao estado Transition:
+      1. Carrega próxima arena em modo Additive
+      2. Aguarda SpikeWall da arena atual atingir endBoundaryX (OnWallReachedEnd)
+      3. Descarrega arena anterior
+      4. Chama RegisterArenaContent(nextScene):
+           SetBounds → atualiza CameraFitLevel com o CameraBounds da nova arena
+           SetDoor → atualiza DoorIndicator com a DoorController da nova arena
+           Subscreve OnWallReachedEnd da nova SpikeWall
+    Proteções: _loadingInProgress impede execução dupla; verifica isLoaded antes de load/unload
+
+  GameBootstrap (script — PersistentScene):
+    Carrega a primeira arena em modo Additive no Start
+    Campo: firstArenaScene (nome da cena, ex: "Arena1")
+
+  DoorController — atualização cross-scene:
+    ArenaManager buscado via FindAnyObjectByType no Start se referência Inspector estiver vazia
+    Permite que a porta funcione sem referência hardcoded para a PersistentScene
+
+  SpikeWallController — atualização cross-scene:
+    ArenaManager buscado via FindAnyObjectByType no Start se referência Inspector estiver vazia
+    Evento OnWallReachedEnd disparado quando transform.position.x >= endBoundaryX
+    Após disparar: para de se mover (_moving = false, _reachedEnd = true)
+
+  DoorIndicator — atualização cross-scene:
+    SetDoor(DoorController): troca a porta monitorada com subscribe/unsubscribe corretos
+    Update verifica door == null (porta destruída ao descarregar cena) e esconde seta automaticamente
+
+  CameraFitLevel — atualização cross-scene:
+    SetBounds(BoxCollider2D): troca levelBounds e desativa _inTransition
+    ClearBounds(): zera levelBounds (câmera livre)
+    Durante _inTransition: levelBounds é nulo, câmera segue players livremente entre arenas

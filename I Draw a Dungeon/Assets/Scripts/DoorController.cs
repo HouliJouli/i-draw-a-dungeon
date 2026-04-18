@@ -20,12 +20,6 @@ public class DoorController : MonoBehaviour
     private Vector3 _closedPosition;
     private Coroutine _animationCoroutine;
 
-    private void OnEnable()
-    {
-        if (arenaManager != null)
-            arenaManager.OnArenaStateChanged += OnArenaStateChanged;
-    }
-
     private void OnDisable()
     {
         if (arenaManager != null)
@@ -34,6 +28,12 @@ public class DoorController : MonoBehaviour
 
     private void Start()
     {
+        if (arenaManager == null)
+            arenaManager = FindAnyObjectByType<ArenaManager>();
+
+        if (arenaManager != null)
+            arenaManager.OnArenaStateChanged += OnArenaStateChanged;
+
         _closedPosition = transform.position;
         CloseDoor();
     }

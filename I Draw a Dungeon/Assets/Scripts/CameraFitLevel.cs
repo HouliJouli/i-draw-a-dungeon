@@ -42,7 +42,23 @@ public class CameraFitLevel : MonoBehaviour
 
     private void OnArenaStateChanged(ArenaState newState)
     {
-        _inTransition = newState == ArenaState.Transition;
+        if (newState == ArenaState.Transition)
+        {
+            _inTransition = true;
+            levelBounds = null;
+        }
+    }
+
+    public void SetBounds(BoxCollider2D newBounds)
+    {
+        levelBounds = newBounds;
+        _inTransition = false;
+        Debug.Log($"[CameraFitLevel] Bounds trocados para: {(newBounds != null ? newBounds.gameObject.scene.name : "null")}");
+    }
+
+    public void ClearBounds()
+    {
+        levelBounds = null;
     }
 
     private void LateUpdate()
