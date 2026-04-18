@@ -91,6 +91,14 @@ public class SpikeWallController : MonoBehaviour
             return;
         }
 
+        // spawners de inimigo
+        EnemySpawner spawner = other.GetComponentInParent<EnemySpawner>();
+        if (spawner != null)
+        {
+            Destroy(spawner.gameObject);
+            return;
+        }
+
         // inimigos: passa por TakeDamage normalmente
         IDamageable damageable = other.GetComponentInParent<IDamageable>();
         if (damageable != null)
