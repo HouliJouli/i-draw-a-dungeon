@@ -13,12 +13,12 @@ public class SpikeWallController : MonoBehaviour
     [BoxGroup("References"), Required]
     [SerializeField] private SpriteRenderer wallSprite;
 
-    [BoxGroup("Movement"), MinValue(0.1f)]
-    [SerializeField] private float moveSpeed = 2f;
-
     [BoxGroup("Movement")]
     [Tooltip("Posição X que representa o limite direito da arena. Ao chegar aqui, a parede sinaliza fim.")]
     [SerializeField] private float endBoundaryX = 30f;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private float _moveSpeed;
 
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private bool _moving;
@@ -63,9 +63,9 @@ public class SpikeWallController : MonoBehaviour
         if (!_moving || _reachedEnd) return;
 
         if (rb != null)
-            rb.MovePosition(rb.position + Vector2.right * moveSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(rb.position + Vector2.right * _moveSpeed * Time.fixedDeltaTime);
         else
-            transform.position += Vector3.right * moveSpeed * Time.fixedDeltaTime;
+            transform.position += Vector3.right * _moveSpeed * Time.fixedDeltaTime;
 
         if (transform.position.x >= endBoundaryX)
         {
@@ -73,6 +73,7 @@ public class SpikeWallController : MonoBehaviour
             _moving = false;
             Debug.Log("[SpikeWallController] Parede atingiu o limite da arena.");
             OnWallReachedEnd?.Invoke();
+            arenaManager?.CompleteTransition();
         }
     }
 
@@ -85,10 +86,14 @@ public class SpikeWallController : MonoBehaviour
     [Button("Activate Wall"), BoxGroup("Debug")]
     private void Activate()
     {
+        float distance = endBoundaryX - transform.position.x;
+        float duration = arenaManager != null ? arenaManager.TransitionDuration : 15f;
+        _moveSpeed = distance / duration;
+
         if (wallCollider != null) wallCollider.enabled = true;
         if (wallSprite != null) wallSprite.enabled = true;
         _moving = true;
-        Debug.Log("[SpikeWallController] Parede de espinhos ativada.");
+        Debug.Log($"[SpikeWallController] Ativada. Velocidade calculada: {_moveSpeed:F2} u/s");
     }
 
     private void OnTriggerEnter2D(Collider2D other)

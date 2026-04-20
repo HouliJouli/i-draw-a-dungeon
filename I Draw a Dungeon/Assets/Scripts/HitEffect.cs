@@ -1,20 +1,12 @@
 using System.Collections;
+using MoreMountains.Feedbacks;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class HitEffect : MonoBehaviour
 {
-    [FoldoutGroup("Flash")]
-    [SerializeField] private Color flashColor = Color.white;
-
-    [FoldoutGroup("Flash"), MinValue(0.01f)]
-    [SerializeField] private float flashDuration = 0.1f;
-
-    [FoldoutGroup("Scale Punch"), MinValue(1f)]
-    [SerializeField] private float punchScale = 1.3f;
-
-    [FoldoutGroup("Scale Punch"), MinValue(0.01f)]
-    [SerializeField] private float punchDuration = 0.08f;
+    [FoldoutGroup("Feel"), Required]
+    [SerializeField] private MMF_Player hitFeedbacks;
 
     [FoldoutGroup("Knockback"), MinValue(0f)]
     [SerializeField] private float knockbackForce = 5f;
@@ -22,62 +14,17 @@ public class HitEffect : MonoBehaviour
     [FoldoutGroup("Knockback"), MinValue(0f)]
     [SerializeField] private float knockbackDuration = 0.1f;
 
-    [BoxGroup("References")]
-    [SerializeField] private SpriteRenderer sr;
-
     private Rigidbody2D rb;
-    private Color originalColor;
-    private Vector3 originalScale;
-    private Coroutine punchCoroutine;
 
     private void Awake()
     {
-        if (sr == null) sr = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
-        if (sr != null) originalColor = sr.color;
-        originalScale = transform.localScale;
     }
 
     public void TriggerHit(Vector2 hitSourcePosition)
     {
-        if (sr != null) StartCoroutine(FlashRoutine());
+        hitFeedbacks?.PlayFeedbacks(transform.position);
         if (rb != null) StartCoroutine(KnockbackRoutine(hitSourcePosition));
-
-        if (punchCoroutine != null) StopCoroutine(punchCoroutine);
-        punchCoroutine = StartCoroutine(ScalePunchRoutine());
-    }
-
-    private IEnumerator FlashRoutine()
-    {
-        sr.color = flashColor;
-        yield return new WaitForSeconds(flashDuration);
-        sr.color = originalColor;
-    }
-
-    private IEnumerator ScalePunchRoutine()
-    {
-        float half = punchDuration * 0.5f;
-        float elapsed = 0f;
-
-        while (elapsed < half)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / half;
-            transform.localScale = Vector3.LerpUnclamped(originalScale, originalScale * punchScale, t);
-            yield return null;
-        }
-
-        elapsed = 0f;
-        while (elapsed < half)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / half;
-            transform.localScale = Vector3.LerpUnclamped(originalScale * punchScale, originalScale, t);
-            yield return null;
-        }
-
-        transform.localScale = originalScale;
-        punchCoroutine = null;
     }
 
     private IEnumerator KnockbackRoutine(Vector2 hitSourcePosition)

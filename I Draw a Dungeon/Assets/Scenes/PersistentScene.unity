@@ -154,12 +154,17 @@ MonoBehaviour:
   arenaManager: {fileID: 1287420162}
   overlayImage: {fileID: 1350400178}
   stateLabel: {fileID: 1818224462}
+  cameraFitLevel: {fileID: 519420034}
   safeColor: {r: 0, g: 0, b: 0, a: 0}
   safeText: 
   warningColor: {r: 1, g: 0.6, b: 0, a: 0.25}
   warningText: Get Ready
+  warningShakeAmplitude: 0.05
+  warningShakeFrequency: 20
   transitionColor: {r: 1, g: 0, b: 0, a: 0.4}
   transitionText: RUN
+  transitionShakeAmplitude: 0.05
+  transitionShakeFrequency: 5
   fadeSpeed: 3
 --- !u!114 &132036347
 MonoBehaviour:

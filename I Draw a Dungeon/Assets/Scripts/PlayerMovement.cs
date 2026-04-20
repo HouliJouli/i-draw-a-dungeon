@@ -29,6 +29,9 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     [FoldoutGroup("Dash"), MinValue(0f)]
     [SerializeField] private float postDashInvincibility = 0.5f;
 
+    [FoldoutGroup("Dash")]
+    [SerializeField] private TrailRenderer dashTrail;
+
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private float currentHealth;
 
@@ -113,6 +116,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         dashTimer = dashDuration;
         cooldownTimer = dashCooldown;
         SetDashInvincibility(true);
+        if (dashTrail != null) dashTrail.emitting = true;
     }
 
     private void SetDashInvincibility(bool active)
@@ -134,6 +138,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             {
                 isDashing = false;
                 invincibilityTimer = postDashInvincibility;
+                if (dashTrail != null) dashTrail.emitting = false;
             }
 
             return;

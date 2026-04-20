@@ -30,6 +30,7 @@ public class ArenaManager : MonoBehaviour
 
     private float _maxTimer;
 
+    public float TransitionDuration => transitionDuration;
     public event Action<ArenaState> OnArenaStateChanged;
 
     private void Start()
@@ -51,10 +52,15 @@ public class ArenaManager : MonoBehaviour
     {
         switch (CurrentState)
         {
-            case ArenaState.Safe:       EnterState(ArenaState.Warning);    break;
-            case ArenaState.Warning:    EnterState(ArenaState.Transition); break;
-            case ArenaState.Transition: EnterState(ArenaState.Completed);  break;
+            case ArenaState.Safe:    EnterState(ArenaState.Warning);    break;
+            case ArenaState.Warning: EnterState(ArenaState.Transition); break;
         }
+    }
+
+    public void CompleteTransition()
+    {
+        if (CurrentState == ArenaState.Transition)
+            EnterState(ArenaState.Completed);
     }
 
     [Button("Restart Arena"), BoxGroup("Debug")]

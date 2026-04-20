@@ -31,8 +31,17 @@ public class CameraFitLevel : MonoBehaviour
     [FoldoutGroup("Transition Push"), MinValue(0f)]
     [SerializeField] private float transitionOffsetSpeed = 1f;
 
+    [FoldoutGroup("Shake"), MinValue(0f)]
+    private float shakeAmplitude = 0.05f;
+
+    [FoldoutGroup("Shake"), MinValue(0f)]
+    private float shakeFrequency = 50f;
+
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private bool _inTransition;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private bool _shaking;
 
     private BoxCollider2D _transitionBounds;
     private Camera cam;
@@ -43,6 +52,7 @@ public class CameraFitLevel : MonoBehaviour
     private Bounds _cachedTransitionBounds;
     private Vector3 _velocity;
     private float _sizeVelocity;
+    private float _shakeTime;
 
     private void Awake()
     {
@@ -69,6 +79,19 @@ public class CameraFitLevel : MonoBehaviour
             if (_transitionBounds != null)
                 _cachedTransitionBounds = _transitionBounds.bounds;
         }
+    }
+
+    public void StartShake(float amplitude, float frequency)
+    {
+        shakeAmplitude = amplitude;
+        shakeFrequency = frequency;
+        _shaking = true;
+        _shakeTime = 0f;
+    }
+
+    public void StopShake()
+    {
+        _shaking = false;
     }
 
     public void SetBounds(BoxCollider2D newBounds)
@@ -148,6 +171,14 @@ public class CameraFitLevel : MonoBehaviour
         }
 
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref _velocity, smoothTime);
+
+        if (_shaking)
+        {
+            _shakeTime += Time.deltaTime * shakeFrequency;
+            float offsetX = (Mathf.PerlinNoise(_shakeTime, 0f) - 0.5f) * 2f * shakeAmplitude;
+            float offsetY = (Mathf.PerlinNoise(0f, _shakeTime) - 0.5f) * 2f * shakeAmplitude;
+            transform.position += new Vector3(offsetX, offsetY, 0f);
+        }
     }
 
     private Bounds LerpBounds(Bounds from, Bounds to, float t)
