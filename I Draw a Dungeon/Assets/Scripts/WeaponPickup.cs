@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -18,7 +19,8 @@ public class WeaponPickup : MonoBehaviour
     private SpriteRenderer sr;
     private Vector3 originalScale;
     private Color originalColor;
-    private bool playerNearby;
+    private Tween _scaleTween;
+    private Tween _colorTween;
 
     private void Awake()
     {
@@ -27,26 +29,30 @@ public class WeaponPickup : MonoBehaviour
         if (sr != null) originalColor = sr.color;
     }
 
-    private void Update()
-    {
-        if (!playerNearby) return;
-
-        float t = (Mathf.Sin(Time.time * pulseSpeed) + 1f) * 0.5f;
-        transform.localScale = Vector3.Lerp(originalScale, originalScale * pulseScale, t);
-        if (sr != null) sr.color = Color.Lerp(originalColor, highlightColor, t);
-    }
-
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-            playerNearby = true;
+        if (!other.CompareTag("Player")) return;
+
+        float cycleDuration = 1f / pulseSpeed;
+
+        _scaleTween = transform
+            .DOScale(originalScale * pulseScale, cycleDuration)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+
+        if (sr != null)
+            _colorTween = sr
+                .DOColor(highlightColor, cycleDuration)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
 
-        playerNearby = false;
+        _scaleTween?.Kill();
+        _colorTween?.Kill();
         transform.localScale = originalScale;
         if (sr != null) sr.color = originalColor;
     }
