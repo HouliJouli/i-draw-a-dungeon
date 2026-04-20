@@ -1,18 +1,25 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public abstract class Weapon : MonoBehaviour
 {
-    [Header("Weapon Stats")]
+    [FoldoutGroup("Stats"), MinValue(0f)]
     [SerializeField] protected float damage = 10f;
+
+    [FoldoutGroup("Stats"), MinValue(0f)]
     [SerializeField] protected float attackRange = 0.5f;
+
+    [FoldoutGroup("Stats"), MinValue(0.05f)]
     [SerializeField] protected float attackCooldown = 0.5f;
 
-    [Header("Durability")]
-    [Tooltip("0 = infinite (default weapon)")]
+    [FoldoutGroup("Durability")]
+    [Tooltip("0 = infinito (arma padrão)"), MinValue(0)]
     [SerializeField] private int maxUses = 0;
 
-    protected float cooldownTimer;
+    [FoldoutGroup("Durability"), ShowInInspector, ReadOnly]
     private int usesLeft;
+
+    protected float cooldownTimer;
 
     protected virtual void Awake()
     {

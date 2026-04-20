@@ -1,19 +1,25 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class DashUI : MonoBehaviour
 {
-    [Header("References")]
+    [BoxGroup("References"), Required]
     [SerializeField] private PlayerMovement playerMovement;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private Image fillImage;
 
-    [Header("Fade Settings")]
+    [FoldoutGroup("Fade"), MinValue(0f)]
     [SerializeField] private float fadeInSpeed = 8f;
+
+    [FoldoutGroup("Fade"), MinValue(0f)]
     [SerializeField] private float fadeOutSpeed = 3f;
-    [SerializeField] [Range(0f, 1f)] private float fadeOutThreshold = 0.85f;
+
+    [FoldoutGroup("Fade"), Range(0f, 1f)]
+    [SerializeField] private float fadeOutThreshold = 0.85f;
 
     private CanvasGroup canvasGroup;
-    private float previousRatio = 1f;
 
     private void Awake()
     {
@@ -35,7 +41,5 @@ public class DashUI : MonoBehaviour
             canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, 1f, fadeInSpeed * Time.deltaTime);
         else
             canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, 0f, fadeOutSpeed * Time.deltaTime);
-
-        previousRatio = ratio;
     }
 }

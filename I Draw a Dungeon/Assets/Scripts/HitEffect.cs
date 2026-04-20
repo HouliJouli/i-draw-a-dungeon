@@ -1,21 +1,30 @@
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class HitEffect : MonoBehaviour
 {
-    [Header("Flash")]
+    [FoldoutGroup("Flash")]
     [SerializeField] private Color flashColor = Color.white;
+
+    [FoldoutGroup("Flash"), MinValue(0.01f)]
     [SerializeField] private float flashDuration = 0.1f;
 
-    [Header("Scale Punch")]
+    [FoldoutGroup("Scale Punch"), MinValue(1f)]
     [SerializeField] private float punchScale = 1.3f;
+
+    [FoldoutGroup("Scale Punch"), MinValue(0.01f)]
     [SerializeField] private float punchDuration = 0.08f;
 
-    [Header("Knockback")]
+    [FoldoutGroup("Knockback"), MinValue(0f)]
     [SerializeField] private float knockbackForce = 5f;
+
+    [FoldoutGroup("Knockback"), MinValue(0f)]
     [SerializeField] private float knockbackDuration = 0.1f;
 
+    [BoxGroup("References")]
     [SerializeField] private SpriteRenderer sr;
+
     private Rigidbody2D rb;
     private Color originalColor;
     private Vector3 originalScale;

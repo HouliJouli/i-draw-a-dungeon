@@ -197,10 +197,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   enemyPrefab: {fileID: 600382210343098323, guid: f7f9961768e3c8e45b259a46a51462f0, type: 3}
   spawnArea: {fileID: 2613986}
+  arenaManager: {fileID: 0}
   initialEnemyCount: 0
   enableWaveSpawn: 1
-  waveCooldown: 10
-  enemiesPerWave: 1
+  normalWaveCooldown: 10
+  normalEnemiesPerWave: 1
+  transitionWaveCooldown: 2
+  transitionEnemiesPerWave: 2
 --- !u!4 &2613988
 Transform:
   m_ObjectHideFlags: 0
@@ -294,10 +297,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   enemyPrefab: {fileID: 2209604636927113218, guid: d9db84ce2d4089c4fab5eeb74c72be41, type: 3}
   spawnArea: {fileID: 17370056}
+  arenaManager: {fileID: 0}
   initialEnemyCount: 0
   enableWaveSpawn: 1
-  waveCooldown: 10
-  enemiesPerWave: 1
+  normalWaveCooldown: 10
+  normalEnemiesPerWave: 1
+  transitionWaveCooldown: 2
+  transitionEnemiesPerWave: 2
 --- !u!4 &17370058
 Transform:
   m_ObjectHideFlags: 0

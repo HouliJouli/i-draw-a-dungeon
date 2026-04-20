@@ -1,40 +1,53 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : MonoBehaviour, IDamageable
 {
-    [Header("Health")]
+    [BoxGroup("Health"), MinValue(1f)]
     [SerializeField] private float maxHealth = 100f;
 
-    [Header("Movement")]
+    [BoxGroup("Movement"), MinValue(0.1f)]
     [SerializeField] private float moveSpeed = 5f;
 
-    [Header("Weapon")]
+    [BoxGroup("Weapon"), Required]
     [SerializeField] private WeaponHolder weaponHolder;
+
+    [BoxGroup("Weapon"), MinValue(0f)]
     [SerializeField] private float collectRadius = 1.5f;
 
-    [Header("Dash")]
+    [FoldoutGroup("Dash"), MinValue(0.1f)]
     [SerializeField] private float dashSpeed = 20f;
+
+    [FoldoutGroup("Dash"), MinValue(0.05f)]
     [SerializeField] private float dashDuration = 0.15f;
+
+    [FoldoutGroup("Dash"), MinValue(0.1f)]
     [SerializeField] private float dashCooldown = 1f;
+
+    [FoldoutGroup("Dash"), MinValue(0f)]
     [SerializeField] private float postDashInvincibility = 0.5f;
 
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private float currentHealth;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private bool isDashing;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private bool isInvincible;
 
     private Rigidbody2D rb;
     private Vector2 inputDirection;
     private Vector2 lastDirection = Vector2.right;
-
-    public float DashCooldownRatio => dashCooldown > 0f ? Mathf.Clamp01(1f - cooldownTimer / dashCooldown) : 1f;
-
-    private bool isDashing;
-    private bool isInvincible;
-    public bool IsInvincible => isInvincible;
-    public bool IsKnockedBack { get; set; }
     private float dashTimer;
     private float invincibilityTimer;
     private float cooldownTimer;
+
+    public float DashCooldownRatio => dashCooldown > 0f ? Mathf.Clamp01(1f - cooldownTimer / dashCooldown) : 1f;
+    public bool IsInvincible => isInvincible;
+    public bool IsKnockedBack { get; set; }
 
     private void Awake()
     {
@@ -71,7 +84,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     public void OnAttack(InputValue value)
     {
         if (!value.isPressed) return;
-weaponHolder?.CurrentWeapon?.TryAttack();
+        weaponHolder?.CurrentWeapon?.TryAttack();
     }
 
     public void OnCollect(InputValue value)

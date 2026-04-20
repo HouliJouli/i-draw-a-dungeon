@@ -1,10 +1,15 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    [Header("Stats")]
+    [BoxGroup("Stats"), MinValue(0.1f)]
     [SerializeField] private float speed = 12f;
+
+    [BoxGroup("Stats"), MinValue(0f)]
     [SerializeField] private float damage = 15f;
+
+    [BoxGroup("Stats"), MinValue(1f)]
     [SerializeField] private float maxDistance = 15f;
 
     private Vector2 direction;

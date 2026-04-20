@@ -1,39 +1,43 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class HandsPivot : MonoBehaviour
 {
-    [Header("References")]
+    [BoxGroup("References")]
     [SerializeField] private Camera cam;
+
+    [BoxGroup("References")]
     [SerializeField] private PlayerInput playerInput;
 
-    [Header("Weapon Slots")]
+    [BoxGroup("Weapon Slots")]
     [SerializeField] private Transform rightWeaponSlot;
+
+    [BoxGroup("Weapon Slots")]
     [SerializeField] private Transform leftWeaponSlot;
 
-    [Header("Rotation")]
+    [FoldoutGroup("Rotation"), MinValue(0f)]
     [SerializeField] private float rotationSpeed = 20f;
 
-    [Header("Sway")]
+    [FoldoutGroup("Sway"), MinValue(0f)]
     [SerializeField] private float swayAmount = 0.05f;
+
+    [FoldoutGroup("Sway"), MinValue(0f)]
     [SerializeField] private float swaySpeed = 8f;
 
     private Vector2 aimInput;
     private Vector2 lastAimDirection = Vector2.right;
+    private float previousAngle;
+    private float angularVelocity;
+    private float swayOffset;
+
+    public Vector2 AimDirection => lastAimDirection;
 
     private void Awake()
     {
         if (cam == null) cam = Camera.main;
     }
 
-    /// <summary>Direção de mira atual em world space, normalizada.</summary>
-    public Vector2 AimDirection => lastAimDirection;
-
-    private float previousAngle;
-    private float angularVelocity;
-    private float swayOffset;
-
-    // Called by PlayerInput (Send Messages) when the Look action fires.
     public void OnLook(InputValue value)
     {
         aimInput = value.Get<Vector2>();
@@ -46,22 +50,18 @@ public class HandsPivot : MonoBehaviour
 
         lastAimDirection = direction;
 
-        // Rotation
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         float smoothAngle = Mathf.LerpAngle(transform.eulerAngles.z, targetAngle, rotationSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Euler(0f, 0f, smoothAngle);
 
-        // Angular velocity for sway
         float deltaAngle = Mathf.DeltaAngle(previousAngle, smoothAngle);
         angularVelocity = deltaAngle / Time.deltaTime;
         swayOffset = Mathf.Lerp(swayOffset, Mathf.Clamp(angularVelocity * swayAmount, -swayAmount, swayAmount), swaySpeed * Time.deltaTime);
         previousAngle = smoothAngle;
 
-        // Flip when aiming left
         bool facingLeft = direction.x < 0f;
         transform.localScale = new Vector3(1f, facingLeft ? -1f : 1f, 1f);
 
-        // Sway on slots
         if (rightWeaponSlot != null)
             rightWeaponSlot.localPosition = new Vector2(rightWeaponSlot.localPosition.x, swayOffset);
         if (leftWeaponSlot != null)
@@ -75,8 +75,6 @@ public class HandsPivot : MonoBehaviour
 
         if (isMouseScheme)
         {
-            // Quando playerInput não está configurado ou scheme é mouse,
-            // lê a posição atual do mouse diretamente para garantir que nunca fique em zero.
             Vector2 screenPos = (playerInput != null && aimInput != Vector2.zero)
                 ? aimInput
                 : Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
@@ -88,8 +86,7 @@ public class HandsPivot : MonoBehaviour
         }
         else
         {
-            // aimInput é a direção do stick (já normalizado, -1..1)
-            if (aimInput.magnitude < 0.1f) return Vector2.zero; // stick em repouso — mantém ângulo
+            if (aimInput.magnitude < 0.1f) return Vector2.zero;
             return aimInput.normalized;
         }
     }

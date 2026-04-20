@@ -1,11 +1,15 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class WeaponHolder : MonoBehaviour
 {
-    [Header("Setup")]
+    [BoxGroup("Setup"), Required]
     [SerializeField] private Transform weaponSlot;
+
+    [BoxGroup("Setup"), Required]
     [SerializeField] private GameObject defaultWeaponPrefab;
 
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     public Weapon CurrentWeapon { get; private set; }
 
     private void Start()

@@ -1,9 +1,13 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerSpawner : MonoBehaviour
 {
+    [BoxGroup("Setup")]
     [SerializeField] private GameObject[] playerPrefabs;
+
+    [BoxGroup("Setup")]
     [SerializeField] private Transform[] spawnPoints;
 
     private void Start()

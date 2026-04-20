@@ -1,29 +1,44 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class RangedEnemy : MonoBehaviour, IDamageable
 {
-    [Header("Health")]
+    [BoxGroup("Health"), MinValue(1f)]
     [SerializeField] private float maxHealth = 80f;
 
-    [Header("Movement")]
+    [FoldoutGroup("Movement"), MinValue(0.1f)]
     [SerializeField] private float moveSpeed = 2.5f;
+
+    [FoldoutGroup("Movement"), MinValue(0f)]
     [SerializeField] private float minDistance = 4f;
+
+    [FoldoutGroup("Movement"), MinValue(0f)]
     [SerializeField] private float maxDistance = 7f;
 
-    [Header("Aim")]
+    [FoldoutGroup("Aim"), Required]
     [SerializeField] private Transform aimPivot;
+
+    [FoldoutGroup("Aim"), MinValue(0.1f)]
     [SerializeField] private float aimSpeed = 15f;
 
-    [Header("Attack")]
+    [FoldoutGroup("Attack"), Required]
     [SerializeField] private GameObject projectilePrefab;
+
+    [FoldoutGroup("Attack"), Required]
     [SerializeField] private Transform firePoint;
+
+    [FoldoutGroup("Attack"), MinValue(0.1f)]
     [SerializeField] private float attackCooldown = 2f;
 
-    [Header("Separation")]
+    [FoldoutGroup("Separation"), MinValue(0f)]
     [SerializeField] private float separationRadius = 1f;
+
+    [FoldoutGroup("Separation"), MinValue(0f)]
     [SerializeField] private float separationForce = 2f;
 
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private float currentHealth;
+
     private float attackTimer;
     private Rigidbody2D rb;
     private Collider2D col;

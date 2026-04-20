@@ -1,23 +1,34 @@
 using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class SpikeWallController : MonoBehaviour
 {
+    [BoxGroup("References")]
     [SerializeField] private ArenaManager arenaManager;
-    [SerializeField] private float moveSpeed = 2f;
 
+    [BoxGroup("References"), Required]
     [SerializeField] private Collider2D wallCollider;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private SpriteRenderer wallSprite;
 
-    [Header("End Boundary")]
+    [BoxGroup("Movement"), MinValue(0.1f)]
+    [SerializeField] private float moveSpeed = 2f;
+
+    [BoxGroup("Movement")]
     [Tooltip("Posição X que representa o limite direito da arena. Ao chegar aqui, a parede sinaliza fim.")]
     [SerializeField] private float endBoundaryX = 30f;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private bool _moving;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private bool _reachedEnd;
 
     public event Action OnWallReachedEnd;
 
     private Rigidbody2D rb;
-    private bool _moving;
-    private bool _reachedEnd;
 
     private void Awake()
     {
@@ -71,6 +82,7 @@ public class SpikeWallController : MonoBehaviour
             Activate();
     }
 
+    [Button("Activate Wall"), BoxGroup("Debug")]
     private void Activate()
     {
         if (wallCollider != null) wallCollider.enabled = true;
@@ -83,7 +95,6 @@ public class SpikeWallController : MonoBehaviour
     {
         if (!_moving) return;
 
-        // players: desativa diretamente para ignorar invencibilidade do dash
         PlayerMovement player = other.GetComponentInParent<PlayerMovement>();
         if (player != null)
         {
@@ -91,7 +102,6 @@ public class SpikeWallController : MonoBehaviour
             return;
         }
 
-        // spawners de inimigo
         EnemySpawner spawner = other.GetComponentInParent<EnemySpawner>();
         if (spawner != null)
         {
@@ -99,7 +109,6 @@ public class SpikeWallController : MonoBehaviour
             return;
         }
 
-        // inimigos: passa por TakeDamage normalmente
         IDamageable damageable = other.GetComponentInParent<IDamageable>();
         if (damageable != null)
             damageable.TakeDamage(float.MaxValue);

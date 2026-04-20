@@ -1,16 +1,28 @@
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ArenaLoader : MonoBehaviour
 {
+    [BoxGroup("References"), Required]
     [SerializeField] private ArenaManager arenaManager;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private CameraFitLevel cameraFit;
+
+    [BoxGroup("References")]
     [SerializeField] private DoorIndicator doorIndicator;
+
+    [BoxGroup("Arena Sequence")]
     [SerializeField] private string[] arenaSceneNames;
 
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private int _currentIndex = 0;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private bool _loadingInProgress;
+
     private bool _wallReachedEnd;
     private SpikeWallController _currentSpikeWall;
 
@@ -30,7 +42,6 @@ public class ArenaLoader : MonoBehaviour
 
     private void Start()
     {
-        // registra conteúdo da primeira arena que já está carregada
         if (arenaSceneNames.Length > 0)
             StartCoroutine(RegisterArenaContent(arenaSceneNames[0]));
     }
@@ -63,7 +74,6 @@ public class ArenaLoader : MonoBehaviour
         string nextScene = arenaSceneNames[nextIndex];
         string previousScene = arenaSceneNames[_currentIndex];
 
-        // carrega próxima arena
         if (!SceneManager.GetSceneByName(nextScene).isLoaded)
         {
             Debug.Log($"[ArenaLoader] Carregando arena: {nextScene}");
@@ -77,7 +87,6 @@ public class ArenaLoader : MonoBehaviour
 
         _currentIndex = nextIndex;
 
-        // aguarda a spike wall da arena ANTERIOR chegar no limite
         _wallReachedEnd = false;
         Debug.Log($"[ArenaLoader] Aguardando SpikeWall para descarregar: {previousScene}");
         yield return new WaitUntil(() => _wallReachedEnd);
@@ -89,7 +98,6 @@ public class ArenaLoader : MonoBehaviour
             Debug.Log($"[ArenaLoader] Arena descarregada: {previousScene}");
         }
 
-        // registra conteúdo da nova arena após Arena1 ser descarregada
         yield return RegisterArenaContent(nextScene);
 
         Scene newScene = SceneManager.GetSceneByName(nextScene);
@@ -146,7 +154,6 @@ public class ArenaLoader : MonoBehaviour
         _currentSpikeWall = content.SpikeWall;
         if (_currentSpikeWall != null)
             _currentSpikeWall.OnWallReachedEnd += OnWallReachedEnd;
-
 
         Debug.Log($"[ArenaLoader] SpikeWall atualizada: {sceneName}");
     }

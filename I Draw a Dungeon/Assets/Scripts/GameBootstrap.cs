@@ -1,9 +1,11 @@
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameBootstrap : MonoBehaviour
 {
+    [BoxGroup("Setup")]
     [SerializeField] private string firstArenaScene = "Arena1";
 
     private IEnumerator Start()

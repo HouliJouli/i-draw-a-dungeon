@@ -1,21 +1,31 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class DoorIndicator : MonoBehaviour
 {
+    [BoxGroup("References")]
     [SerializeField] private DoorController door;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private Camera targetCamera;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private RectTransform arrowRect;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private Image arrowImage;
 
-    [Header("Edge Padding")]
+    [BoxGroup("Edge"), MinValue(0f)]
     [SerializeField] private float screenEdgePadding = 60f;
 
-    [Header("Pulse")]
+    [FoldoutGroup("Pulse"), MinValue(0f)]
     [SerializeField] private float pulseDistance = 12f;
+
+    [FoldoutGroup("Pulse"), MinValue(0f)]
     [SerializeField] private float pulseSpeed = 3f;
 
-    [Header("Rotation")]
+    [BoxGroup("Rotation")]
     [Tooltip("Ajuste se a ponta da seta não estiver apontando para a porta. 0 = ponta para cima no sprite.")]
     [SerializeField] private float rotationOffset = 0f;
 

@@ -1,22 +1,35 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour, IDamageable
 {
-    [Header("Health")]
+    [BoxGroup("Health"), MinValue(1f)]
     [SerializeField] private float maxHealth = 100f;
 
-    [Header("Movement")]
+    [FoldoutGroup("Movement"), MinValue(0.1f)]
     [SerializeField] private float moveSpeed = 2f;
+
+    [FoldoutGroup("Movement"), MinValue(0f)]
     [SerializeField] private float stopDistance = 1f;
+
+    [FoldoutGroup("Movement"), MinValue(0f)]
     [SerializeField] private float separationRadius = 1f;
+
+    [FoldoutGroup("Movement"), MinValue(0f)]
     [SerializeField] private float separationForce = 2f;
 
-    [Header("Attack")]
+    [FoldoutGroup("Attack"), MinValue(0f)]
     [SerializeField] private float attackDamage = 10f;
+
+    [FoldoutGroup("Attack"), MinValue(0.1f)]
     [SerializeField] private float attackCooldown = 1f;
+
+    [FoldoutGroup("Attack"), MinValue(0f)]
     [SerializeField] private float attackRange = 1.2f;
 
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private float currentHealth;
+
     private float attackTimer;
     private Rigidbody2D rb;
     private Transform player;

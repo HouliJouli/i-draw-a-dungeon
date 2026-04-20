@@ -1,10 +1,18 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class ArenaContent : MonoBehaviour
 {
+    [BoxGroup("Arena Systems")]
     [SerializeField] private SpikeWallController spikeWall;
+
+    [BoxGroup("Arena Systems")]
     [SerializeField] private DoorController door;
-    [SerializeField] private BoxCollider2D cameraBounds;
+
+    [BoxGroup("Camera")]
+    [Required, SerializeField] private BoxCollider2D cameraBounds;
+
+    [BoxGroup("Camera")]
     [SerializeField] private BoxCollider2D transitionBounds;
 
     public SpikeWallController SpikeWall => spikeWall;

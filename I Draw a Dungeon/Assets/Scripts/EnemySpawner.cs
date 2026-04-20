@@ -1,26 +1,39 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Setup")]
-    [SerializeField] private ArenaManager arenaManager;
+    [BoxGroup("References"), Required]
     [SerializeField] private GameObject enemyPrefab;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private BoxCollider2D spawnArea;
 
-    [Header("Initial Spawn")]
+    [BoxGroup("References")]
+    [SerializeField] private ArenaManager arenaManager;
+
+    [BoxGroup("Initial Spawn"), MinValue(0)]
     [SerializeField] private int initialEnemyCount = 5;
 
-    [Header("Normal Mode (Safe / Warning)")]
+    [FoldoutGroup("Normal Mode (Safe / Warning)")]
     [SerializeField] private bool enableWaveSpawn = true;
+
+    [FoldoutGroup("Normal Mode (Safe / Warning)"), MinValue(1f)]
     [SerializeField] private float normalWaveCooldown = 10f;
+
+    [FoldoutGroup("Normal Mode (Safe / Warning)"), MinValue(1)]
     [SerializeField] private int normalEnemiesPerWave = 3;
 
-    [Header("Transition Mode")]
+    [FoldoutGroup("Transition Mode"), MinValue(0.5f)]
     [SerializeField] private float transitionWaveCooldown = 4f;
+
+    [FoldoutGroup("Transition Mode"), MinValue(1)]
     [SerializeField] private int transitionEnemiesPerWave = 6;
 
-    private float waveTimer;
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private bool inTransitionMode;
+
+    private float waveTimer;
 
     private void Start()
     {
@@ -72,6 +85,14 @@ public class EnemySpawner : MonoBehaviour
             waveTimer = normalWaveCooldown;
             Debug.Log($"[EnemySpawner] Modo Normal restaurado ({newState}).");
         }
+    }
+
+    [Button("Spawn Wave Now"), BoxGroup("Debug")]
+    private void SpawnWaveNow()
+    {
+        int count = inTransitionMode ? transitionEnemiesPerWave : normalEnemiesPerWave;
+        for (int i = 0; i < count; i++)
+            Spawn();
     }
 
     private void Spawn()

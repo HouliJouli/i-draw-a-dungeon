@@ -1,30 +1,42 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 public class CameraFitLevel : MonoBehaviour
 {
-    [Header("Zoom Limits")]
+    [FoldoutGroup("Zoom"), MinValue(0.1f)]
     [SerializeField] private float minOrthoSize = 5f;
+
+    [FoldoutGroup("Zoom"), MinValue(0.1f)]
     [SerializeField] private float maxOrthoSize = 12f;
+
+    [FoldoutGroup("Zoom"), MinValue(0f)]
     [SerializeField] private float padding = 2f;
 
-    [Header("Bounds")]
+    [BoxGroup("Bounds")]
     [SerializeField] private BoxCollider2D levelBounds;
+
+    [BoxGroup("Bounds"), MinValue(0.1f)]
     [SerializeField] private float boundsTransitionSpeed = 2f;
 
-    private BoxCollider2D _transitionBounds;
-
-    [Header("Smoothing")]
+    [BoxGroup("Smoothing"), MinValue(0.01f)]
     [SerializeField] private float smoothTime = 0.3f;
 
-    [Header("Transition Push")]
+    [FoldoutGroup("Transition Push"), Required]
     [SerializeField] private ArenaManager arenaManager;
+
+    [FoldoutGroup("Transition Push"), MinValue(0f)]
     [SerializeField] private float maxTransitionOffset = 3f;
+
+    [FoldoutGroup("Transition Push"), MinValue(0f)]
     [SerializeField] private float transitionOffsetSpeed = 1f;
 
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    private bool _inTransition;
+
+    private BoxCollider2D _transitionBounds;
     private Camera cam;
     private float _currentOffset;
-    private bool _inTransition;
     private float _boundsLerpT = 1f;
     private Bounds _fromBounds;
     private Bounds _toBounds;

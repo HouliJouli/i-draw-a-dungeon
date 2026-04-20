@@ -1,27 +1,38 @@
+using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class ArenaStateFeedback : MonoBehaviour
 {
-    [Header("References")]
+    [BoxGroup("References"), Required]
     [SerializeField] private ArenaManager arenaManager;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private Image overlayImage;
+
+    [BoxGroup("References")]
     [SerializeField] private TextMeshProUGUI stateLabel;
 
-    [Header("Safe State")]
+    [FoldoutGroup("Safe State")]
     [SerializeField] private Color safeColor = new Color(0f, 0f, 0f, 0f);
+
+    [FoldoutGroup("Safe State")]
     [SerializeField] private string safeText = "";
 
-    [Header("Warning State")]
+    [FoldoutGroup("Warning State")]
     [SerializeField] private Color warningColor = new Color(1f, 0.6f, 0f, 0.25f);
+
+    [FoldoutGroup("Warning State")]
     [SerializeField] private string warningText = "Get Ready";
 
-    [Header("Transition State")]
+    [FoldoutGroup("Transition State")]
     [SerializeField] private Color transitionColor = new Color(1f, 0f, 0f, 0.4f);
+
+    [FoldoutGroup("Transition State")]
     [SerializeField] private string transitionText = "RUN";
 
-    [Header("Fade")]
+    [BoxGroup("Fade"), MinValue(0.1f)]
     [SerializeField] private float fadeSpeed = 3f;
 
     private Color _targetColor;

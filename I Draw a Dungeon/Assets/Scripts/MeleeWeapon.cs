@@ -1,24 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class MeleeWeapon : Weapon
 {
-    [Header("Attack")]
+    [BoxGroup("Attack"), Required]
     [SerializeField] private Transform attackPoint;
+
+    [BoxGroup("Attack")]
     [SerializeField] private LayerMask enemyLayers;
 
-    [Header("Swing Animation")]
+    [FoldoutGroup("Swing Animation"), MinValue(0f)]
     [SerializeField] private float swingAngle = 80f;
+
+    [FoldoutGroup("Swing Animation"), MinValue(0.05f)]
     [SerializeField] private float swingDuration = 0.2f;
+
+    [FoldoutGroup("Swing Animation"), MinValue(0f)]
     [SerializeField] private float overshootAngle = 15f;
+
+    [FoldoutGroup("Swing Animation"), MinValue(0f)]
     [SerializeField] private float squashAmount = 0.15f;
 
-    [Header("Hit Window")]
-    [SerializeField] [Range(0f, 1f)] private float activeStart = 0.3f;
-    [SerializeField] [Range(0f, 1f)] private float activeEnd   = 0.7f;
+    [FoldoutGroup("Hit Window"), Range(0f, 1f)]
+    [SerializeField] private float activeStart = 0.3f;
 
-    [Header("Hit Feedback")]
+    [FoldoutGroup("Hit Window"), Range(0f, 1f)]
+    [SerializeField] private float activeEnd = 0.7f;
+
+    [BoxGroup("Hit Feedback"), MinValue(0f)]
     [SerializeField] private float hitStopDuration = 0.04f;
 
     private readonly HashSet<Collider2D> hitTargets = new();
@@ -50,7 +61,6 @@ public class MeleeWeapon : Weapon
         transform.localRotation = startRot;
         transform.localScale = originalScale;
 
-        // Swing forward
         while (elapsed < halfDuration)
         {
             elapsed += Time.deltaTime;
@@ -76,7 +86,6 @@ public class MeleeWeapon : Weapon
             yield return null;
         }
 
-        // Overshoot
         elapsed = 0f;
         float overshootDuration = swingDuration * 0.15f;
         while (elapsed < overshootDuration)
@@ -87,7 +96,6 @@ public class MeleeWeapon : Weapon
             yield return null;
         }
 
-        // Return to original
         elapsed = 0f;
         while (elapsed < halfDuration)
         {

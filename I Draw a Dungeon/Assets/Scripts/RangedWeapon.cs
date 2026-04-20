@@ -1,15 +1,20 @@
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class RangedWeapon : Weapon
 {
-    [Header("Ranged")]
+    [BoxGroup("Ranged"), Required]
     [SerializeField] private GameObject projectilePrefab;
+
+    [BoxGroup("Ranged"), Required]
     [SerializeField] private Transform firePoint;
 
-    [Header("Recoil")]
+    [FoldoutGroup("Recoil"), MinValue(0f)]
     [SerializeField] private float recoilDistance = 0.15f;
+
+    [FoldoutGroup("Recoil"), MinValue(0.01f)]
     [SerializeField] private float recoilDuration = 0.08f;
 
     private GameObject nocked;
@@ -24,7 +29,7 @@ public class RangedWeapon : Weapon
 
     protected override void PerformAttack()
     {
-if (projectilePrefab == null || firePoint == null) return;
+        if (projectilePrefab == null || firePoint == null) return;
 
         if (nocked != null)
         {

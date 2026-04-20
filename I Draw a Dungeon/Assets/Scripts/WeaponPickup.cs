@@ -1,13 +1,18 @@
-using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class WeaponPickup : MonoBehaviour
 {
+    [BoxGroup("Setup"), Required]
     [SerializeField] private GameObject weaponPrefab;
 
-    [Header("Highlight")]
+    [FoldoutGroup("Highlight"), MinValue(1f)]
     [SerializeField] private float pulseScale = 1.2f;
+
+    [FoldoutGroup("Highlight"), MinValue(0f)]
     [SerializeField] private float pulseSpeed = 3f;
+
+    [FoldoutGroup("Highlight")]
     [SerializeField] private Color highlightColor = Color.yellow;
 
     private SpriteRenderer sr;

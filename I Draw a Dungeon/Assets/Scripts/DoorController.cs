@@ -1,20 +1,32 @@
 using System;
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class DoorController : MonoBehaviour
 {
+    [BoxGroup("References")]
     [SerializeField] private ArenaManager arenaManager;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private Collider2D doorCollider;
+
+    [BoxGroup("References"), Required]
     [SerializeField] private SpriteRenderer doorSprite;
 
     public event Action OnDoorOpened;
     public event Action OnDoorClosed;
 
-    [Header("Slide Animation")]
+    [FoldoutGroup("Slide Animation")]
     [SerializeField] private Vector2 slideDirection = Vector2.up;
+
+    [FoldoutGroup("Slide Animation"), MinValue(0.1f)]
     [SerializeField] private float slideDistance = 2f;
+
+    [FoldoutGroup("Slide Animation"), MinValue(0.1f)]
     [SerializeField] private float animationDuration = 0.5f;
+
+    [FoldoutGroup("Slide Animation")]
     [SerializeField] private AnimationCurve slideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     private Vector3 _closedPosition;
@@ -44,6 +56,7 @@ public class DoorController : MonoBehaviour
             OpenDoor();
     }
 
+    [Button("Open Door"), BoxGroup("Debug")]
     public void OpenDoor()
     {
         if (doorCollider != null) doorCollider.enabled = false;
@@ -55,6 +68,7 @@ public class DoorController : MonoBehaviour
         Debug.Log($"[DoorController] {gameObject.name} abrindo.");
     }
 
+    [Button("Close Door"), BoxGroup("Debug")]
     public void CloseDoor()
     {
         if (doorCollider != null) doorCollider.enabled = true;
