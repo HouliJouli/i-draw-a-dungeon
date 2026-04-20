@@ -160,11 +160,11 @@ MonoBehaviour:
   warningColor: {r: 1, g: 0.6, b: 0, a: 0.25}
   warningText: Get Ready
   warningShakeAmplitude: 0.05
-  warningShakeFrequency: 20
+  warningShakeFrequency: 120
   transitionColor: {r: 1, g: 0, b: 0, a: 0.4}
   transitionText: RUN
   transitionShakeAmplitude: 0.05
-  transitionShakeFrequency: 5
+  transitionShakeFrequency: 40
   fadeSpeed: 3
 --- !u!114 &132036347
 MonoBehaviour:

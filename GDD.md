@@ -362,21 +362,29 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
 
 8.5 Feedback de Hit
   HitEffect (componente nos inimigos e no player):
-    Flash de cor configurável ao receber dano
-    Scale punch (squash no impacto) configurável
-    Knockback via Rigidbody2D na direção oposta ao atacante
+    Flash e scale punch removidos do código — substituídos por MMF_Player (Feel)
+    hitFeedbacks: referência a um MMF_Player configurável no Inspector
+      → designer configura os efeitos visuais (MMF_Flicker, MMF_Scale, etc.) diretamente no Inspector
+    Knockback via Rigidbody2D na direção oposta ao atacante (permanece em código)
     Duração e força do knockback configuráveis
     Seta IsKnockedBack em Enemy e PlayerMovement durante o knockback
   Hit stop na arma melee ao confirmar hit (WaitForSecondsRealtime)
 
-  SpriteRenderer desacoplado do objeto raiz do player:
-    O sprite do player pode estar num GameObject filho (ex: "Body") separado do raiz
-    HitEffect fica no raiz do player (junto com Rigidbody2D e Collider)
-    SpriteRenderer é exposto como campo serializável [SerializeField] no HitEffect
-      → deve ser preenchido no Inspector apontando para o objeto filho com o sprite
-    Fallback automático: se não preenchido, busca GetComponent → GetComponentInChildren
-    Essa separação permite animar, escalar ou trocar o sprite independentemente
-      sem afetar física, colisão ou lógica do player
+  MMF_Flicker (recomendado para hit flash):
+    Componente do Feel — pisca o SpriteRenderer entre a cor original e a Flicker Color
+    Bound Renderer: arraste o SpriteRenderer do Body
+    Mode: Color
+    Flicker Duration: 0.3, Flicker Period: 0.05 (valores recomendados)
+
+8.5.1 Dash Trail
+  TrailRenderer no Body do player controla o rastro visual do dash
+  Controlado diretamente pelo PlayerMovement via dashTrail.emitting:
+    emitting = true ao iniciar o dash
+    emitting = false ao terminar o dash (dashTimer <= 0)
+  Configuração recomendada do TrailRenderer:
+    Time: 0.08–0.15, curva de Width afinando até 0, Material Sprite-Lit-Default
+    Emitting desmarcado por padrão — PlayerMovement controla
+  Sem dependência de MMF_Player para o trail
 
 8.6 UI
   DashUI:
@@ -491,6 +499,19 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
   Campos expostos: enemyPrefab, spawnArea, arenaManager, initialEnemyCount, enableWaveSpawn,
     normalWaveCooldown, normalEnemiesPerWave, transitionWaveCooldown, transitionEnemiesPerWave
 
+8.10.1 Feel — MMF_Player (Game Feel)
+  Pacote: Feel (More Mountains), versão 4.x
+  Componente principal: MMF_Player (substituto do MMFeedbacks, depreciado na v4)
+  Uso no projeto:
+    HitEffect.hitFeedbacks: MMF_Player no prefab do player/inimigo para efeitos de hit
+      Feedbacks recomendados: MMF_Flicker (piscar sprite), MMF_Scale (scale punch)
+    Efeitos de arena (Warning/Transition): gerenciados diretamente pelo CameraFitLevel via shake interno
+      — sem MMF_Player para shake de câmera (evita conflito com CameraFitLevel)
+  Filosofia de uso:
+    MMF_Player é configurado 100% no Inspector pelo game designer
+    Scripts apenas chamam .PlayFeedbacks() no momento certo — sem lógica de efeito no código
+    Campos de MMF_Player são opcionais (nullable) — ausência não gera erro
+
 8.11 PlayerSpawner
   Componente independente adicionado a um GameObject vazio na cena
   Instancia cada player prefab em seu respectivo spawn point no Start
@@ -554,11 +575,15 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
   ArenaManager (script):
     State machine com enum ArenaState: Safe → Warning → Transition → Completed
     Timer por estado (safeDuration, warningDuration, transitionDuration) configurável no Inspector
-    Avança automaticamente entre estados ao zerar o timer
+    Avança automaticamente Safe → Warning → Transition via timer
+    Transition → Completed NÃO é acionado por timer — é acionado pela SpikeWall via CompleteTransition()
+      → garante sincronia entre o fim da transição visual e o fim físico da SpikeWall
     Evento público: System.Action<ArenaState> OnArenaStateChanged
       → todos os sistemas da arena se inscrevem nesse evento (porta, parede, câmera, feedback visual)
     Completed para o loop — sem transição além dele
     Restart(): reinicia o ciclo a partir de Safe — chamado pelo ArenaLoader ao registrar nova arena
+    CompleteTransition(): chamado pela SpikeWall ao atingir o limite — transiciona para Completed
+    TransitionDuration: propriedade pública lida pela SpikeWall para calcular velocidade
     Campos: safeDuration, warningDuration, transitionDuration
 
   DoorController (script):
@@ -597,30 +622,39 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
       Image fullscreen (stretch/stretch, Raycast Target = false) → overlayImage
       TextMeshProUGUI centralizado (opcional) → stateLabel
     Comportamento por estado:
-      Safe      → overlay transparente, sem texto (fade suave)
-      Warning   → tint laranja/amarelo configurável + texto "Get Ready"
-      Transition → tint vermelho configurável + texto "RUN"
-      Completed → volta para Safe (limpa o overlay ao fim de cada arena)
+      Safe      → overlay transparente, sem texto, sem shake
+      Warning   → tint laranja configurável + texto "Get Ready" + camera shake suave
+      Transition → tint vermelho configurável + texto "RUN" + camera shake intenso
+      Completed → volta para Safe (limpa overlay e para shake)
     Transição de cor: Color.Lerp por frame via fadeSpeed — sem coroutines
+    Camera shake: chama CameraFitLevel.StartShake(amplitude, frequency) / StopShake()
+      → shake configurável separadamente para Warning e Transition no Inspector
     stateLabel desabilitado automaticamente quando o texto é vazio
-    Todas as cores e textos são configuráveis no Inspector
-    Campos: arenaManager, overlayImage, stateLabel, safeColor, warningColor, transitionColor,
-      safeText, warningText, transitionText, fadeSpeed
+    Campos: arenaManager, overlayImage, stateLabel, cameraFitLevel,
+      safeColor/Text, warningColor/Text/ShakeAmplitude/ShakeFrequency,
+      transitionColor/Text/ShakeAmplitude/ShakeFrequency, fadeSpeed
 
   SpikeWallController (script):
     Começa inativo: Collider2D e SpriteRenderer desabilitados no Awake
     Escuta OnArenaStateChanged do ArenaManager via OnEnable/OnDisable
     Ao estado Transition → Activate():
       Habilita Collider2D e SpriteRenderer
-      Liga flag _moving
-    Movimento em FixedUpdate: rb.MovePosition na direção Vector2.right * moveSpeed
+      Calcula velocidade automaticamente: _moveSpeed = (endBoundaryX - posição atual) / transitionDuration
+        → SpikeWall sempre percorre o trajeto em exatamente o mesmo tempo configurado no ArenaManager
+    Movimento em FixedUpdate: rb.MovePosition na direção Vector2.right * _moveSpeed
       Fallback para transform.position se não houver Rigidbody2D
+    Ao atingir endBoundaryX:
+      Para o movimento (_moving = false, _reachedEnd = true)
+      Dispara OnWallReachedEnd
+      Chama ArenaManager.CompleteTransition() → transiciona para ArenaState.Completed
     Rigidbody2D configurado como Kinematic, gravityScale = 0
     Colisão via OnTriggerEnter2D (collider deve ser Is Trigger):
       Player (PlayerMovement): SetActive(false) direto — bypassa invencibilidade do dash
+      EnemySpawner: Destroy(spawner.gameObject) — impede spawn após a arena fechar
       Inimigos (IDamageable): TakeDamage(float.MaxValue) — morte instantânea
-      GetComponentInParent usado em ambos os casos (suporta hierarquia com filhos)
-    Campos: arenaManager, moveSpeed, wallCollider, wallSprite
+      GetComponentInParent usado em todos os casos (suporta hierarquia com filhos)
+    Campos: arenaManager, endBoundaryX, wallCollider, wallSprite
+    Campo de debug (ReadOnly): _moveSpeed (velocidade calculada automaticamente)
 
   ArenaContent (script — em cada arena):
     Registro local dos sistemas de uma arena
@@ -672,3 +706,11 @@ Repositório: https://github.com/HouliJouli/i-draw-a-dungeon
     ClearBounds(): zera levelBounds (câmera livre)
     Durante _inTransition: câmera usa _transitionBounds como clamp — segue players entre as duas arenas
     Ao entrar em Transition: _cachedTransitionBounds salva Bounds como struct — imune ao unload da cena
+
+  CameraFitLevel — Camera Shake integrado:
+    Shake implementado internamente via Perlin Noise — sem dependência de MMPositionShaker ou Feel
+    StartShake(amplitude, frequency): inicia shake contínuo com parâmetros definidos pelo chamador
+    StopShake(): para o shake imediatamente
+    Offset de shake aplicado APÓS o SmoothDamp — não interfere no seguimento de players nem nos bounds
+    Parâmetros controlados por ArenaStateFeedback (valores configuráveis no Inspector por estado)
+    Campos internos: shakeAmplitude, shakeFrequency, _shakeTime, _shaking
