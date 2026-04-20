@@ -1,4 +1,4 @@
-using System.Collections;
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,7 +19,7 @@ public class RangedWeapon : Weapon
 
     private GameObject nocked;
     private Vector3 originalLocalPosition;
-    private Coroutine recoilCoroutine;
+    private Sequence _recoilSequence;
 
     private void Start()
     {
@@ -46,41 +46,17 @@ public class RangedWeapon : Weapon
         obj.GetComponent<Projectile>().Init(aimDirection, ownerCollider);
         ConsumeUse();
 
-        StartCoroutine(RenockAfterCooldown());
+        DOVirtual.DelayedCall(attackCooldown, SpawnNockedArrow);
 
-        if (recoilCoroutine != null) StopCoroutine(recoilCoroutine);
-        recoilCoroutine = StartCoroutine(RecoilRoutine());
-    }
-
-    private IEnumerator RenockAfterCooldown()
-    {
-        yield return new WaitForSeconds(attackCooldown);
-        SpawnNockedArrow();
-    }
-
-    private IEnumerator RecoilRoutine()
-    {
         Vector3 recoilPosition = originalLocalPosition + Vector3.left * recoilDistance;
         float half = recoilDuration * 0.5f;
-        float elapsed = 0f;
 
-        while (elapsed < half)
-        {
-            elapsed += Time.deltaTime;
-            transform.localPosition = Vector3.Lerp(originalLocalPosition, recoilPosition, elapsed / half);
-            yield return null;
-        }
-
-        elapsed = 0f;
-        while (elapsed < half)
-        {
-            elapsed += Time.deltaTime;
-            transform.localPosition = Vector3.Lerp(recoilPosition, originalLocalPosition, elapsed / half);
-            yield return null;
-        }
-
-        transform.localPosition = originalLocalPosition;
-        recoilCoroutine = null;
+        _recoilSequence?.Kill();
+        _recoilSequence = DOTween.Sequence();
+        _recoilSequence.Append(
+            transform.DOLocalMove(recoilPosition, half).SetEase(Ease.OutQuad));
+        _recoilSequence.Append(
+            transform.DOLocalMove(originalLocalPosition, half).SetEase(Ease.OutElastic));
     }
 
     private void SpawnNockedArrow()
