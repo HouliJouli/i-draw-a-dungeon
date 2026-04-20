@@ -1,5 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -35,6 +35,7 @@ public class MeleeWeapon : Weapon
     private readonly HashSet<Collider2D> hitTargets = new();
     private Vector3 originalScale;
     private bool hitRegistered;
+    private Sequence _swingSequence;
 
     private void Awake()
     {
@@ -43,16 +44,12 @@ public class MeleeWeapon : Weapon
 
     protected override void PerformAttack()
     {
-        StopAllCoroutines();
-        StartCoroutine(SwingRoutine());
-    }
-
-    private IEnumerator SwingRoutine()
-    {
+        _swingSequence?.Kill();
         hitTargets.Clear();
         hitRegistered = false;
-        float halfDuration = swingDuration * 0.5f;
-        float elapsed = 0f;
+
+        float halfDuration     = swingDuration * 0.5f;
+        float overshootDuration = swingDuration * 0.15f;
 
         Quaternion startRot     = Quaternion.Euler(0f, 0f, swingAngle);
         Quaternion endRot       = Quaternion.Euler(0f, 0f, -swingAngle);
@@ -61,53 +58,53 @@ public class MeleeWeapon : Weapon
         transform.localRotation = startRot;
         transform.localScale = originalScale;
 
-        while (elapsed < halfDuration)
+        Vector3 squashedScale = new Vector3(
+            originalScale.x * (1f + squashAmount),
+            originalScale.y * (1f - squashAmount),
+            originalScale.z);
+
+        _swingSequence = DOTween.Sequence();
+
+        // Fase 1: swing + squash
+        _swingSequence.Append(
+            transform.DOLocalRotateQuaternion(endRot, halfDuration).SetEase(Ease.InOutSine));
+        _swingSequence.Join(
+            transform.DOScale(squashedScale, halfDuration * 0.5f)
+                .SetEase(Ease.OutSine)
+                .SetLoops(2, LoopType.Yoyo));
+
+        // Fase 2: overshoot
+        _swingSequence.Append(
+            transform.DOLocalRotateQuaternion(overshootRot, overshootDuration).SetEase(Ease.OutQuad));
+
+        // Fase 3: retorno
+        _swingSequence.Append(
+            transform.DOLocalRotateQuaternion(Quaternion.identity, halfDuration).SetEase(Ease.InOutSine));
+
+        _swingSequence.OnComplete(() =>
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
-            transform.localRotation = Quaternion.Lerp(startRot, endRot, t);
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = originalScale;
+        });
 
-            float squashT = Mathf.Sin(t * Mathf.PI);
-            transform.localScale = new Vector3(
-                originalScale.x * (1f + squashAmount * squashT),
-                originalScale.y * (1f - squashAmount * squashT),
-                originalScale.z);
+        _swingSequence.OnUpdate(() =>
+        {
+            float elapsed = _swingSequence.Elapsed();
 
-            float normalizedTime = elapsed / halfDuration;
-            if (normalizedTime >= activeStart && normalizedTime <= activeEnd)
-                DetectHits();
+            if (elapsed <= halfDuration)
+            {
+                float normalizedTime = elapsed / halfDuration;
+                if (normalizedTime >= activeStart && normalizedTime <= activeEnd)
+                    DetectHits();
+            }
 
             if (hitRegistered)
             {
                 hitRegistered = false;
-                yield return new WaitForSecondsRealtime(hitStopDuration);
+                _swingSequence.Pause();
+                DOVirtual.DelayedCall(hitStopDuration, () => _swingSequence?.Play(), ignoreTimeScale: true);
             }
-
-            yield return null;
-        }
-
-        elapsed = 0f;
-        float overshootDuration = swingDuration * 0.15f;
-        while (elapsed < overshootDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / overshootDuration;
-            transform.localRotation = Quaternion.Lerp(endRot, overshootRot, t);
-            yield return null;
-        }
-
-        elapsed = 0f;
-        while (elapsed < halfDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, elapsed / halfDuration);
-            transform.localRotation = Quaternion.Lerp(overshootRot, Quaternion.identity, t);
-            transform.localScale = Vector3.Lerp(transform.localScale, originalScale, t);
-            yield return null;
-        }
-
-        transform.localRotation = Quaternion.identity;
-        transform.localScale = originalScale;
+        });
     }
 
     private void DetectHits()
