@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -30,7 +30,7 @@ public class DoorController : MonoBehaviour
     [SerializeField] private AnimationCurve slideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     private Vector3 _closedPosition;
-    private Coroutine _animationCoroutine;
+    private Sequence _openSequence;
 
     private void OnDisable()
     {
@@ -61,8 +61,17 @@ public class DoorController : MonoBehaviour
     {
         if (doorCollider != null) doorCollider.enabled = false;
 
-        if (_animationCoroutine != null) StopCoroutine(_animationCoroutine);
-        _animationCoroutine = StartCoroutine(AnimateOpen());
+        _openSequence?.Kill();
+
+        Vector3 endPos = _closedPosition + (Vector3)(slideDirection.normalized * slideDistance);
+
+        _openSequence = DOTween.Sequence();
+        _openSequence.Join(transform.DOMove(endPos, animationDuration).SetEase(slideCurve));
+
+        if (doorSprite != null)
+            _openSequence.Join(doorSprite.DOFade(0f, animationDuration).SetEase(slideCurve));
+
+        _openSequence.OnComplete(() => Debug.Log($"[DoorController] {gameObject.name} aberta."));
 
         OnDoorOpened?.Invoke();
         Debug.Log($"[DoorController] {gameObject.name} abrindo.");
@@ -73,7 +82,7 @@ public class DoorController : MonoBehaviour
     {
         if (doorCollider != null) doorCollider.enabled = true;
 
-        if (_animationCoroutine != null) StopCoroutine(_animationCoroutine);
+        _openSequence?.Kill();
 
         transform.position = _closedPosition;
 
@@ -86,41 +95,5 @@ public class DoorController : MonoBehaviour
 
         OnDoorClosed?.Invoke();
         Debug.Log($"[DoorController] {gameObject.name} fechada.");
-    }
-
-    private IEnumerator AnimateOpen()
-    {
-        Vector3 startPos = _closedPosition;
-        Vector3 endPos = _closedPosition + (Vector3)(slideDirection.normalized * slideDistance);
-        float startAlpha = doorSprite != null ? doorSprite.color.a : 1f;
-        float elapsed = 0f;
-
-        while (elapsed < animationDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = slideCurve.Evaluate(Mathf.Clamp01(elapsed / animationDuration));
-
-            transform.position = Vector3.Lerp(startPos, endPos, t);
-
-            if (doorSprite != null)
-            {
-                var c = doorSprite.color;
-                c.a = Mathf.Lerp(startAlpha, 0f, t);
-                doorSprite.color = c;
-            }
-
-            yield return null;
-        }
-
-        transform.position = endPos;
-
-        if (doorSprite != null)
-        {
-            var c = doorSprite.color;
-            c.a = 0f;
-            doorSprite.color = c;
-        }
-
-        Debug.Log($"[DoorController] {gameObject.name} aberta.");
     }
 }
