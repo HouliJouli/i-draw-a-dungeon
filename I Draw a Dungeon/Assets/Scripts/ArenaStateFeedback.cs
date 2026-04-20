@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -47,11 +48,10 @@ public class ArenaStateFeedback : MonoBehaviour
     [FoldoutGroup("Transition State"), MinValue(0f)]
     [SerializeField] private float transitionShakeFrequency = 60f;
 
-    [BoxGroup("Fade"), MinValue(0.1f)]
-    [SerializeField] private float fadeSpeed = 3f;
+    [BoxGroup("Fade"), MinValue(0.01f)]
+    [SerializeField] private float fadeDuration = 0.4f;
 
-    private Color _targetColor;
-    private string _targetText;
+    private Tween _fadeTween;
 
     private void Start()
     {
@@ -61,7 +61,6 @@ public class ArenaStateFeedback : MonoBehaviour
         if (arenaManager != null)
             arenaManager.OnArenaStateChanged += OnArenaStateChanged;
 
-        SetTargetForState(ArenaState.Safe);
         if (overlayImage != null) overlayImage.color = safeColor;
         ApplyText();
     }
@@ -72,15 +71,9 @@ public class ArenaStateFeedback : MonoBehaviour
             arenaManager.OnArenaStateChanged -= OnArenaStateChanged;
     }
 
-    private void Update()
-    {
-        if (overlayImage == null) return;
-        overlayImage.color = Color.Lerp(overlayImage.color, _targetColor, fadeSpeed * Time.deltaTime);
-    }
-
     private void OnArenaStateChanged(ArenaState newState)
     {
-        SetTargetForState(newState);
+        FadeToStateColor(newState);
         ApplyText();
 
         if (newState == ArenaState.Warning)
@@ -93,33 +86,33 @@ public class ArenaStateFeedback : MonoBehaviour
         Debug.Log($"[ArenaStateFeedback] Estado: {newState}");
     }
 
-    private void SetTargetForState(ArenaState state)
+    private void FadeToStateColor(ArenaState state)
     {
-        switch (state)
+        if (overlayImage == null) return;
+
+        Color target = state switch
         {
-            case ArenaState.Safe:
-                _targetColor = safeColor;
-                _targetText = safeText;
-                break;
-            case ArenaState.Warning:
-                _targetColor = warningColor;
-                _targetText = warningText;
-                break;
-            case ArenaState.Transition:
-                _targetColor = transitionColor;
-                _targetText = transitionText;
-                break;
-            case ArenaState.Completed:
-                _targetColor = safeColor;
-                _targetText = safeText;
-                break;
-        }
+            ArenaState.Warning    => warningColor,
+            ArenaState.Transition => transitionColor,
+            _                     => safeColor
+        };
+
+        _fadeTween?.Kill();
+        _fadeTween = overlayImage.DOColor(target, fadeDuration).SetEase(Ease.InOutSine);
     }
 
     private void ApplyText()
     {
         if (stateLabel == null) return;
-        stateLabel.text = _targetText;
-        stateLabel.enabled = !string.IsNullOrEmpty(_targetText);
+
+        string text = arenaManager?.CurrentState switch
+        {
+            ArenaState.Warning    => warningText,
+            ArenaState.Transition => transitionText,
+            _                     => safeText
+        };
+
+        stateLabel.text = text;
+        stateLabel.enabled = !string.IsNullOrEmpty(text);
     }
 }
