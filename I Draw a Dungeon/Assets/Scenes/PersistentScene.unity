@@ -165,7 +165,7 @@ MonoBehaviour:
   transitionText: RUN
   transitionShakeAmplitude: 0.05
   transitionShakeFrequency: 40
-  fadeSpeed: 3
+  fadeDuration: 0.4
 --- !u!114 &132036347
 MonoBehaviour:
   m_ObjectHideFlags: 0
