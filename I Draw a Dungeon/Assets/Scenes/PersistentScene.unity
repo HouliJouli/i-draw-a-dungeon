@@ -478,7 +478,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fa12f91b6e4ed941be500ca5518e0af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFitLevel
-  minOrthoSize: 7
+  minOrthoSize: 6
   maxOrthoSize: 10
   padding: 3
   levelBounds: {fileID: 0}

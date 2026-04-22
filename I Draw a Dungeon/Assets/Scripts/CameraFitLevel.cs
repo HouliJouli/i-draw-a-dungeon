@@ -150,9 +150,6 @@ public class CameraFitLevel : MonoBehaviour
             }
         }
 
-        float targetSize = Mathf.Clamp((maxDist / 2f) + padding, minOrthoSize, maxOrthoSize);
-        cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, targetSize, ref _sizeVelocity, smoothTime);
-
         float targetOffset = _inTransition ? maxTransitionOffset : 0f;
         _currentOffset = Mathf.Lerp(_currentOffset, targetOffset, transitionOffsetSpeed * Time.deltaTime);
 
@@ -160,14 +157,26 @@ public class CameraFitLevel : MonoBehaviour
 
         if (_inTransition && _transitionBounds != null)
         {
-            targetPos = ClampToBounds(targetPos, cam.orthographicSize, _transitionBounds.bounds);
+            Bounds tb = _transitionBounds.bounds;
+            float maxSize = MaxOrthoSizeForBounds(tb);
+            float targetSize = Mathf.Clamp((maxDist / 2f) + padding, minOrthoSize, Mathf.Min(maxOrthoSize, maxSize));
+            cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, targetSize, ref _sizeVelocity, smoothTime);
+            targetPos = ClampToBounds(targetPos, cam.orthographicSize, tb);
         }
         else if (!_inTransition && levelBounds != null)
         {
             Bounds effectiveBounds = _boundsLerpT < 1f
                 ? LerpBounds(_fromBounds, _toBounds, _boundsLerpT)
                 : levelBounds.bounds;
+            float maxSize = MaxOrthoSizeForBounds(effectiveBounds);
+            float targetSize = Mathf.Clamp((maxDist / 2f) + padding, minOrthoSize, Mathf.Min(maxOrthoSize, maxSize));
+            cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, targetSize, ref _sizeVelocity, smoothTime);
             targetPos = ClampToBounds(targetPos, cam.orthographicSize, effectiveBounds);
+        }
+        else
+        {
+            float targetSize = Mathf.Clamp((maxDist / 2f) + padding, minOrthoSize, maxOrthoSize);
+            cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, targetSize, ref _sizeVelocity, smoothTime);
         }
 
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref _velocity, smoothTime);
@@ -197,5 +206,12 @@ public class CameraFitLevel : MonoBehaviour
         float clampedY = Mathf.Clamp(position.y, b.min.y + halfH, b.max.y - halfH);
 
         return new Vector3(clampedX, clampedY, position.z);
+    }
+
+    private float MaxOrthoSizeForBounds(Bounds b)
+    {
+        float maxFromHeight = b.size.y * 0.5f;
+        float maxFromWidth  = b.size.x * 0.5f / cam.aspect;
+        return Mathf.Min(maxFromHeight, maxFromWidth);
     }
 }

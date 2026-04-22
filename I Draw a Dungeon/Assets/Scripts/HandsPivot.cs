@@ -41,6 +41,7 @@ public class HandsPivot : MonoBehaviour
     public void OnLook(InputValue value)
     {
         aimInput = value.Get<Vector2>();
+        Debug.Log($"[OnLook] {transform.root.name} → {aimInput}");
     }
 
     private void Update()
