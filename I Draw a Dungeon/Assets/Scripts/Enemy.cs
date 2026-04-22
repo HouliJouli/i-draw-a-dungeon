@@ -1,3 +1,4 @@
+using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -127,11 +128,16 @@ public class Enemy : MonoBehaviour, IDamageable
         return true;
     }
 
+    public event Action OnDeath;
+
     public void TakeDamage(float amount)
     {
         currentHealth -= amount;
 
         if (currentHealth <= 0f)
+        {
+            OnDeath?.Invoke();
             Destroy(gameObject);
+        }
     }
 }
