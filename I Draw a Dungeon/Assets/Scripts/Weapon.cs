@@ -17,13 +17,15 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] private int maxUses = 0;
 
     [FoldoutGroup("Durability"), ShowInInspector, ReadOnly]
-    private int usesLeft;
+    public int RemainingUses { get; private set; }
+
+    public bool HasLimitedUses => maxUses > 0;
 
     protected float cooldownTimer;
 
     protected virtual void Awake()
     {
-        usesLeft = maxUses;
+        RemainingUses = maxUses;
     }
 
     public void TryAttack()
@@ -39,8 +41,8 @@ public abstract class Weapon : MonoBehaviour
     {
         if (maxUses == 0) return;
 
-        usesLeft--;
-        if (usesLeft <= 0)
+        RemainingUses = Mathf.Max(0, RemainingUses - 1);
+        if (RemainingUses <= 0)
             GetComponentInParent<WeaponHolder>()?.BreakCurrentWeapon();
     }
 
