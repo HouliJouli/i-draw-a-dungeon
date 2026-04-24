@@ -103,7 +103,8 @@ public class SpikeWallController : MonoBehaviour
         PlayerMovement player = other.GetComponentInParent<PlayerMovement>();
         if (player != null)
         {
-            player.gameObject.SetActive(false);
+            if (other.gameObject == player.gameObject)
+                player.gameObject.SetActive(false);
             return;
         }
 
