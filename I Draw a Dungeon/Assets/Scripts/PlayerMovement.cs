@@ -47,6 +47,8 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     private float dashTimer;
     private float invincibilityTimer;
     private float cooldownTimer;
+    private InputAction _attackAction;
+    private bool _attackWasHeld;
 
     public float DashCooldownRatio => dashCooldown > 0f ? Mathf.Clamp01(1f - cooldownTimer / dashCooldown) : 1f;
     public bool IsInvincible => isInvincible;
@@ -60,6 +62,9 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             LayerMask.NameToLayer("Projectiles"),
             LayerMask.NameToLayer("Default"),
             true);
+
+        PlayerInput playerInput = GetComponent<PlayerInput>();
+        _attackAction = playerInput?.actions["Attack"];
     }
 
     public void TakeDamage(float amount)
@@ -84,10 +89,18 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             lastDirection = inputDirection;
     }
 
-    public void OnAttack(InputValue value)
+    public void OnAttack(InputValue value) { }
+
+    private void Update()
     {
-        if (!value.isPressed) return;
-        weaponHolder?.CurrentWeapon?.TryAttack();
+        bool attackHeld = _attackAction?.IsPressed() ?? false;
+
+        if (attackHeld && !_attackWasHeld)
+            weaponHolder?.CurrentWeapon?.OnAttackPressed();
+        else if (!attackHeld && _attackWasHeld)
+            weaponHolder?.CurrentWeapon?.OnAttackReleased();
+
+        _attackWasHeld = attackHeld;
     }
 
     public void OnCollect(InputValue value)

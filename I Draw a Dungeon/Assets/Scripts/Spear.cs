@@ -29,6 +29,12 @@ public class Spear : Weapon
     [BoxGroup("Hit Feedback"), MinValue(0f)]
     [SerializeField] private float hitStopDuration = 0.04f;
 
+    [FoldoutGroup("Throw"), Required]
+    [SerializeField] private GameObject spearProjectilePrefab;
+
+    [FoldoutGroup("Throw"), MinValue(0f)]
+    [SerializeField] private float minHoldDuration = 0.25f;
+
     [FoldoutGroup("Throw"), ShowInInspector, ReadOnly]
     public bool IsChargingThrow { get; private set; }
 
@@ -36,6 +42,7 @@ public class Spear : Weapon
     private bool hitRegistered;
     private Sequence _thrustSequence;
     private Vector3 _originalLocalPosition;
+    private float _pressTime;
 
     protected override void Awake()
     {
@@ -45,6 +52,24 @@ public class Spear : Weapon
     private void Start()
     {
         _originalLocalPosition = transform.localPosition;
+    }
+
+    public override void OnAttackPressed()
+    {
+        if (cooldownTimer > 0f) return;
+        IsChargingThrow = true;
+        _pressTime = Time.time;
+    }
+
+    public override void OnAttackReleased()
+    {
+        if (!IsChargingThrow) return;
+        IsChargingThrow = false;
+
+        if (Time.time - _pressTime >= minHoldDuration)
+            PerformThrow();
+        else
+            TryAttack();
     }
 
     protected override void PerformAttack()
@@ -87,9 +112,25 @@ public class Spear : Weapon
         });
     }
 
-    public void TryThrow()
+    private void PerformThrow()
     {
-        // TODO: implementar lógica de arremesso (charge + disparo como projétil)
+        if (spearProjectilePrefab == null) return;
+
+        cooldownTimer = attackCooldown;
+
+        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
+        Vector2 aimDirection = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+
+        Collider2D ownerCollider = GetComponentInParent<Collider2D>();
+
+        float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+        GameObject obj = Instantiate(
+            spearProjectilePrefab,
+            tipPoint.position,
+            Quaternion.Euler(0f, 0f, angle));
+
+        obj.GetComponent<SpearProjectile>()?.Init(aimDirection, ownerCollider);
+        ConsumeUse();
     }
 
     private void DetectHits()

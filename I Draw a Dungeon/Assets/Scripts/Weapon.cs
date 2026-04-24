@@ -35,6 +35,9 @@ public abstract class Weapon : MonoBehaviour
         PerformAttack();
     }
 
+    public virtual void OnAttackPressed() => TryAttack();
+    public virtual void OnAttackReleased() { }
+
     protected abstract void PerformAttack();
 
     protected void ConsumeUse()
