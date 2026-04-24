@@ -24,7 +24,7 @@ public class WeaponPickup : MonoBehaviour
 
     private void Awake()
     {
-        sr = GetComponent<SpriteRenderer>();
+        sr = GetComponentInChildren<SpriteRenderer>();
         originalScale = transform.localScale;
         if (sr != null) originalColor = sr.color;
     }

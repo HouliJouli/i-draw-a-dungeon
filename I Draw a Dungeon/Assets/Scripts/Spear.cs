@@ -105,6 +105,9 @@ public class Spear : Weapon
             hitTargets.Add(hit);
             hitRegistered = true;
 
+            if (hitTargets.Count == 1)
+                ConsumeUse();
+
             if (hit.TryGetComponent(out IDamageable damageable))
                 damageable.TakeDamage(damage);
 
