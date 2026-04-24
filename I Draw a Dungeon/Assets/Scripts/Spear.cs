@@ -124,13 +124,17 @@ public class Spear : Weapon
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
 
         float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+
+        Vector3 spawnPosition = tipPoint.position;
+
+        GetComponentInParent<WeaponHolder>()?.BreakCurrentWeapon();
+
         GameObject obj = Instantiate(
             spearProjectilePrefab,
-            tipPoint.position,
+            spawnPosition,
             Quaternion.Euler(0f, 0f, angle));
 
         obj.GetComponent<SpearProjectile>()?.Init(aimDirection, ownerCollider);
-        ConsumeUse();
     }
 
     private void DetectHits()

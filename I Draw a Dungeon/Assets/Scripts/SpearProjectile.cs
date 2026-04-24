@@ -49,7 +49,11 @@ public class SpearProjectile : MonoBehaviour
     {
         if (!launched || stuck) return;
 
-        if (other.TryGetComponent(out IDamageable damageable))
+        IDamageable damageable = other.GetComponentInParent<IDamageable>();
+
+        if (damageable == null && other.isTrigger) return;
+
+        if (damageable != null)
             damageable.TakeDamage(damage);
 
         HitEffect hitEffect = other.GetComponentInParent<HitEffect>();
