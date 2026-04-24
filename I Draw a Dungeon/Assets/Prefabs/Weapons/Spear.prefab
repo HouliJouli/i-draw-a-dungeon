@@ -148,13 +148,17 @@ MonoBehaviour:
   tipPoint: {fileID: 676930918301256637}
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 72
   thrustDistance: 0.8
   thrustDuration: 0.15
   returnDuration: 0.12
   activeStart: 0.2
   activeEnd: 0.85
   hitStopDuration: 0.04
+  meleeLungeForce: 10
+  meleeRecoilForce: 2
+  throwSpeedMultiplier: 0.35
+  throwLungeForce: 20
   spearProjectilePrefab: {fileID: 4816885963356433912, guid: cfef1cbd0635f5c4995f43c7eea2db54, type: 3}
   minHoldDuration: 0.25
 --- !u!1 &5475026146661089595

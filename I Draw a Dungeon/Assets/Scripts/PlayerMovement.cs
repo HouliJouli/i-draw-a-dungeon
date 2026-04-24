@@ -53,6 +53,8 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     public float DashCooldownRatio => dashCooldown > 0f ? Mathf.Clamp01(1f - cooldownTimer / dashCooldown) : 1f;
     public bool IsInvincible => isInvincible;
     public bool IsKnockedBack { get; set; }
+    public float SpeedMultiplier { get; set; } = 1f;
+    public Vector2 LungeVelocity { get; set; }
 
     private void Awake()
     {
@@ -169,6 +171,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
 
         cooldownTimer -= Time.fixedDeltaTime;
         if (IsKnockedBack) return;
-        rb.linearVelocity = inputDirection * moveSpeed;
+        LungeVelocity = Vector2.Lerp(LungeVelocity, Vector2.zero, 15f * Time.fixedDeltaTime);
+        rb.linearVelocity = inputDirection * moveSpeed * SpeedMultiplier + LungeVelocity;
     }
 }

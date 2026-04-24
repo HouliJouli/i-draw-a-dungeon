@@ -29,6 +29,18 @@ public class Spear : Weapon
     [BoxGroup("Hit Feedback"), MinValue(0f)]
     [SerializeField] private float hitStopDuration = 0.04f;
 
+    [FoldoutGroup("Melee Feel"), MinValue(0f)]
+    [SerializeField] private float meleeLungeForce = 5f;
+
+    [FoldoutGroup("Melee Feel"), MinValue(0f)]
+    [SerializeField] private float meleeRecoilForce = 2f;
+
+    [FoldoutGroup("Throw Feel"), Range(0f, 1f)]
+    [SerializeField] private float throwSpeedMultiplier = 0.35f;
+
+    [FoldoutGroup("Throw Feel"), MinValue(0f)]
+    [SerializeField] private float throwLungeForce = 7f;
+
     [FoldoutGroup("Throw"), Required]
     [SerializeField] private GameObject spearProjectilePrefab;
 
@@ -59,12 +71,18 @@ public class Spear : Weapon
         if (cooldownTimer > 0f) return;
         IsChargingThrow = true;
         _pressTime = Time.time;
+
+        PlayerMovement player = GetComponentInParent<PlayerMovement>();
+        if (player != null) player.SpeedMultiplier = throwSpeedMultiplier;
     }
 
     public override void OnAttackReleased()
     {
         if (!IsChargingThrow) return;
         IsChargingThrow = false;
+
+        PlayerMovement player = GetComponentInParent<PlayerMovement>();
+        if (player != null) player.SpeedMultiplier = 1f;
 
         if (Time.time - _pressTime >= minHoldDuration)
             PerformThrow();
@@ -79,6 +97,14 @@ public class Spear : Weapon
         hitRegistered = false;
         transform.localPosition = _originalLocalPosition;
 
+        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
+        Vector2 aimDir = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        Rigidbody2D playerRb = GetComponentInParent<Rigidbody2D>();
+
+        PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
+        if (playerMovement != null)
+            playerMovement.LungeVelocity = aimDir.normalized * meleeLungeForce;
+
         Vector3 thrustTarget = _originalLocalPosition + Vector3.right * thrustDistance;
 
         _thrustSequence = DOTween.Sequence();
@@ -90,7 +116,11 @@ public class Spear : Weapon
             transform.DOLocalMove(_originalLocalPosition, returnDuration).SetEase(Ease.InSine));
 
         _thrustSequence.OnComplete(() =>
-            transform.localPosition = _originalLocalPosition);
+        {
+            transform.localPosition = _originalLocalPosition;
+            if (playerMovement != null)
+                playerMovement.LungeVelocity = -aimDir.normalized * meleeRecoilForce;
+        });
 
         _thrustSequence.OnUpdate(() =>
         {
@@ -120,21 +150,20 @@ public class Spear : Weapon
 
         HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
         Vector2 aimDirection = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
-
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
-
+        WeaponHolder weaponHolder = GetComponentInParent<WeaponHolder>();
+        int uses = RemainingUses;
         float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
 
-        Vector3 spawnPosition = tipPoint.position;
+        PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
+        if (playerMovement != null)
+            playerMovement.LungeVelocity = aimDirection.normalized * throwLungeForce;
 
-        GetComponentInParent<WeaponHolder>()?.BreakCurrentWeapon();
+        Vector3 spawnPos = tipPoint.position;
+        weaponHolder?.BreakCurrentWeapon();
 
-        GameObject obj = Instantiate(
-            spearProjectilePrefab,
-            spawnPosition,
-            Quaternion.Euler(0f, 0f, angle));
-
-        obj.GetComponent<SpearProjectile>()?.Init(aimDirection, ownerCollider, RemainingUses);
+        GameObject obj = Instantiate(spearProjectilePrefab, spawnPos, Quaternion.Euler(0f, 0f, angle));
+        obj.GetComponent<SpearProjectile>()?.Init(aimDirection, ownerCollider, uses);
     }
 
     private void DetectHits()

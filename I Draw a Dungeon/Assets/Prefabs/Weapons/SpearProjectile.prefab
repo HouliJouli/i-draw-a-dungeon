@@ -156,6 +156,8 @@ MonoBehaviour:
   damage: 10
   maxDistance: 15
   pickupPrefab: {fileID: 4816885963356433912, guid: 8daef244cf41fc44e808b9370442e50f, type: 3}
+  impactBounceStrength: 0.3
+  impactBounceDuration: 0.3
 --- !u!1 &5475026146661089595
 GameObject:
   m_ObjectHideFlags: 0

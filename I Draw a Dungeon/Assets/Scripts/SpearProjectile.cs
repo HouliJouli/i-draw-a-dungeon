@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -14,6 +15,12 @@ public class SpearProjectile : MonoBehaviour
 
     [BoxGroup("Pickup"), Required]
     [SerializeField] private GameObject pickupPrefab;
+
+    [FoldoutGroup("Impact Feel"), MinValue(0f)]
+    [SerializeField] private float impactBounceStrength = 0.2f;
+
+    [FoldoutGroup("Impact Feel"), MinValue(0f)]
+    [SerializeField] private float impactBounceDuration = 0.2f;
 
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private bool stuck;
@@ -85,17 +92,20 @@ public class SpearProjectile : MonoBehaviour
         if (col != null)
             col.enabled = false;
 
-        SpawnPickup();
-    }
-
-    private void SpawnPickup()
-    {
         if (remainingUses <= 0)
         {
             Destroy(gameObject);
             return;
         }
 
+        transform.DOPunchPosition(
+            transform.up * impactBounceStrength,
+            impactBounceDuration, vibrato: 2, elasticity: 0.5f)
+            .OnComplete(SpawnPickup);
+    }
+
+    private void SpawnPickup()
+    {
         if (pickupPrefab == null) return;
 
         GameObject pickupObj = Instantiate(pickupPrefab, transform.position, transform.rotation);
