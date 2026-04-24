@@ -134,7 +134,7 @@ public class Spear : Weapon
             spawnPosition,
             Quaternion.Euler(0f, 0f, angle));
 
-        obj.GetComponent<SpearProjectile>()?.Init(aimDirection, ownerCollider);
+        obj.GetComponent<SpearProjectile>()?.Init(aimDirection, ownerCollider, RemainingUses);
     }
 
     private void DetectHits()

@@ -40,6 +40,11 @@ public abstract class Weapon : MonoBehaviour
 
     protected abstract void PerformAttack();
 
+    public void SetRemainingUses(int uses)
+    {
+        RemainingUses = Mathf.Max(0, uses);
+    }
+
     protected void ConsumeUse()
     {
         if (maxUses == 0) return;

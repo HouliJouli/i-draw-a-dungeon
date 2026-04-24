@@ -21,6 +21,7 @@ public class WeaponPickup : MonoBehaviour
     private Color originalColor;
     private Tween _scaleTween;
     private Tween _colorTween;
+    private int _remainingUsesOverride = -1;
 
     private void Awake()
     {
@@ -57,9 +58,18 @@ public class WeaponPickup : MonoBehaviour
         if (sr != null) sr.color = originalColor;
     }
 
+    public void InitWithUses(int uses)
+    {
+        _remainingUsesOverride = uses;
+    }
+
     public void Collect(WeaponHolder holder)
     {
         holder.EquipWeapon(weaponPrefab);
+
+        if (_remainingUsesOverride >= 0 && holder.CurrentWeapon != null)
+            holder.CurrentWeapon.SetRemainingUses(_remainingUsesOverride);
+
         Destroy(gameObject);
     }
 }

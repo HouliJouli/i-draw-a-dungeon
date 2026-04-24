@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 7922177057324512176}
   - component: {fileID: 4541301529070273062}
   m_Layer: 0
-  m_Name: SpearProectile
+  m_Name: SpearProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -155,6 +155,7 @@ MonoBehaviour:
   speed: 14
   damage: 10
   maxDistance: 15
+  pickupPrefab: {fileID: 4816885963356433912, guid: 8daef244cf41fc44e808b9370442e50f, type: 3}
 --- !u!1 &5475026146661089595
 GameObject:
   m_ObjectHideFlags: 0

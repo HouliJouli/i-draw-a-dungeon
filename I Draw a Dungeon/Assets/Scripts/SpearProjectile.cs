@@ -12,20 +12,25 @@ public class SpearProjectile : MonoBehaviour
     [BoxGroup("Stats"), MinValue(1f)]
     [SerializeField] private float maxDistance = 15f;
 
+    [BoxGroup("Pickup"), Required]
+    [SerializeField] private GameObject pickupPrefab;
+
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     private bool stuck;
 
     private Vector2 spawnPosition;
     private bool launched;
+    private int remainingUses;
     private Rigidbody2D rb;
     private Collider2D col;
 
-    public void Init(Vector2 direction, Collider2D owner = null)
+    public void Init(Vector2 direction, Collider2D owner = null, int remainingUses = 0)
     {
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();
         spawnPosition = transform.position;
         launched = true;
+        this.remainingUses = remainingUses;
 
         if (rb != null)
         {
@@ -54,7 +59,10 @@ public class SpearProjectile : MonoBehaviour
         if (damageable == null && other.isTrigger) return;
 
         if (damageable != null)
+        {
             damageable.TakeDamage(damage);
+            remainingUses = 0;
+        }
 
         HitEffect hitEffect = other.GetComponentInParent<HitEffect>();
         if (hitEffect != null)
@@ -76,6 +84,26 @@ public class SpearProjectile : MonoBehaviour
 
         if (col != null)
             col.enabled = false;
+
+        SpawnPickup();
+    }
+
+    private void SpawnPickup()
+    {
+        if (remainingUses <= 0)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (pickupPrefab == null) return;
+
+        GameObject pickupObj = Instantiate(pickupPrefab, transform.position, transform.rotation);
+
+        if (pickupObj.TryGetComponent(out WeaponPickup pickup))
+            pickup.InitWithUses(remainingUses);
+
+        Destroy(gameObject);
     }
 
     private void OnDrawGizmosSelected()
