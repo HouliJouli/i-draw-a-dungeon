@@ -112,11 +112,11 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, collectRadius);
         foreach (Collider2D hit in hits)
         {
-            if (hit.TryGetComponent(out WeaponPickup pickup))
-            {
-                pickup.Collect(weaponHolder);
-                return;
-            }
+            if (!hit.TryGetComponent(out WeaponPickup pickup)) continue;
+            if (hit.transform.IsChildOf(weaponHolder.transform)) continue;
+
+            pickup.Collect(weaponHolder);
+            return;
         }
     }
 
