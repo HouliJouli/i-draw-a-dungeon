@@ -180,6 +180,7 @@ public class Axe : Weapon
 
             reflectedProjectiles.Add(projectile);
             projectile.Reflect(_swingAimDir, ownerCollider, reflectedTargetTag);
+            ConsumeUse();
         }
     }
 
