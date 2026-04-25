@@ -93,6 +93,8 @@ MonoBehaviour:
   activeStart: 0.3
   activeEnd: 0.7
   hitStopDuration: 0.04
+  meleeLungeForce: 7
+  meleeRecoilForce: 1
 --- !u!1 &5475026146661089595
 GameObject:
   m_ObjectHideFlags: 0
