@@ -16,6 +16,7 @@ public class Projectile : MonoBehaviour
     private Vector2 spawnPosition;
     private bool launched;
     private string targetTag;
+    private Collider2D _ownerCollider;
 
     public void Init(Vector2 direction, Collider2D owner = null, string targetTag = "")
     {
@@ -33,6 +34,7 @@ public class Projectile : MonoBehaviour
 
         if (owner != null)
         {
+            _ownerCollider = owner;
             Collider2D col = GetComponent<Collider2D>();
             if (col != null) Physics2D.IgnoreCollision(col, owner);
         }
@@ -44,15 +46,19 @@ public class Projectile : MonoBehaviour
         direction = newDirection.normalized;
         spawnPosition = transform.position;
 
+        Collider2D col = GetComponent<Collider2D>();
+
+        if (col != null && _ownerCollider != null)
+            Physics2D.IgnoreCollision(col, _ownerCollider, false);
+
+        if (col != null && newOwner != null)
+            Physics2D.IgnoreCollision(col, newOwner);
+
+        _ownerCollider = newOwner;
+
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
             rb.linearVelocity = direction * speed;
-
-        if (newOwner != null)
-        {
-            Collider2D col = GetComponent<Collider2D>();
-            if (col != null) Physics2D.IgnoreCollision(col, newOwner);
-        }
     }
 
     private void Update()
