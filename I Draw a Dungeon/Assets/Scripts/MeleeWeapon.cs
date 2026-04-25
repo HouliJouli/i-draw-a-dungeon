@@ -32,6 +32,12 @@ public class MeleeWeapon : Weapon
     [BoxGroup("Hit Feedback"), MinValue(0f)]
     [SerializeField] private float hitStopDuration = 0.04f;
 
+    [FoldoutGroup("Melee Feel"), MinValue(0f)]
+    [SerializeField] private float meleeLungeForce = 5f;
+
+    [FoldoutGroup("Melee Feel"), MinValue(0f)]
+    [SerializeField] private float meleeRecoilForce = 2f;
+
     private readonly HashSet<Collider2D> hitTargets = new();
     private Vector3 originalScale;
     private bool hitRegistered;
@@ -63,6 +69,12 @@ public class MeleeWeapon : Weapon
             originalScale.y * (1f - squashAmount),
             originalScale.z);
 
+        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
+        Vector2 aimDir = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
+        if (playerMovement != null)
+            playerMovement.LungeVelocity = aimDir.normalized * meleeLungeForce;
+
         _swingSequence = DOTween.Sequence();
 
         // Fase 1: swing + squash
@@ -85,6 +97,8 @@ public class MeleeWeapon : Weapon
         {
             transform.localRotation = Quaternion.identity;
             transform.localScale = originalScale;
+            if (playerMovement != null)
+                playerMovement.LungeVelocity = -aimDir.normalized * meleeRecoilForce;
         });
 
         _swingSequence.OnUpdate(() =>
