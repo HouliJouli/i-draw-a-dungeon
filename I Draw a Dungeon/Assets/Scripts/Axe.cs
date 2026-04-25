@@ -11,6 +11,17 @@ public class Axe : Weapon
     [BoxGroup("Attack")]
     [SerializeField] private LayerMask enemyLayers;
 
+    [BoxGroup("Reflection")]
+    [SerializeField] private LayerMask projectileLayers;
+
+    [BoxGroup("Reflection"), MinValue(0f)]
+    [Tooltip("Raio de detecção para reflexão. Pode ser maior que o attackRange para cobrir toda a lâmina.")]
+    [SerializeField] private float reflectionRange = 1.2f;
+
+    [BoxGroup("Reflection")]
+    [Tooltip("Tag atribuída ao projétil refletido. Vazio = atinge qualquer alvo.")]
+    [SerializeField] private string reflectedTargetTag = "";
+
     [FoldoutGroup("Swing Animation"), MinValue(0f)]
     [SerializeField] private float swingAngle = 130f;
 
@@ -38,10 +49,15 @@ public class Axe : Weapon
     [FoldoutGroup("Axe Feel"), MinValue(0f)]
     [SerializeField] private float meleeRecoilForce = 3f;
 
+    [FoldoutGroup("Hit Window"), ShowInInspector, ReadOnly]
+    public bool IsInActiveWindow { get; private set; }
+
     private readonly HashSet<Collider2D> hitTargets = new();
+    private readonly HashSet<Projectile> reflectedProjectiles = new();
     private Vector3 originalScale;
     private bool hitRegistered;
     private Sequence _swingSequence;
+    private Vector2 _swingAimDir;
 
     protected override void Awake()
     {
@@ -53,7 +69,9 @@ public class Axe : Weapon
     {
         _swingSequence?.Kill();
         hitTargets.Clear();
+        reflectedProjectiles.Clear();
         hitRegistered = false;
+        IsInActiveWindow = false;
 
         float halfDuration      = swingDuration * 0.5f;
         float overshootDuration = swingDuration * 0.15f;
@@ -72,9 +90,10 @@ public class Axe : Weapon
 
         HandsPivot handsPivot    = GetComponentInParent<HandsPivot>();
         Vector2 aimDir           = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        _swingAimDir             = aimDir.normalized;
         PlayerMovement playerMov = GetComponentInParent<PlayerMovement>();
         if (playerMov != null)
-            playerMov.LungeVelocity = aimDir.normalized * meleeLungeForce;
+            playerMov.LungeVelocity = _swingAimDir * meleeLungeForce;
 
         _swingSequence = DOTween.Sequence();
 
@@ -93,21 +112,25 @@ public class Axe : Weapon
 
         _swingSequence.OnComplete(() =>
         {
+            IsInActiveWindow = false;
             transform.localRotation = Quaternion.identity;
             transform.localScale    = originalScale;
             if (playerMov != null)
-                playerMov.LungeVelocity = -aimDir.normalized * meleeRecoilForce;
+                playerMov.LungeVelocity = -_swingAimDir * meleeRecoilForce;
         });
 
         _swingSequence.OnUpdate(() =>
         {
-            float elapsed = _swingSequence.Elapsed();
+            float elapsed        = _swingSequence.Elapsed();
+            float normalizedTime = elapsed / halfDuration;
+            bool inWindow        = elapsed <= halfDuration && normalizedTime >= activeStart && normalizedTime <= activeEnd;
 
-            if (elapsed <= halfDuration)
+            IsInActiveWindow = inWindow;
+
+            if (inWindow)
             {
-                float normalizedTime = elapsed / halfDuration;
-                if (normalizedTime >= activeStart && normalizedTime <= activeEnd)
-                    DetectHits();
+                DetectHits();
+                ReflectProjectiles();
             }
 
             if (hitRegistered)
@@ -117,6 +140,21 @@ public class Axe : Weapon
                 DOVirtual.DelayedCall(hitStopDuration, () => _swingSequence?.Play(), ignoreTimeScale: true);
             }
         });
+    }
+
+    private void ReflectProjectiles()
+    {
+        Collider2D ownerCollider = GetComponentInParent<Collider2D>();
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, reflectionRange, projectileLayers);
+
+        foreach (Collider2D hit in hits)
+        {
+            if (!hit.TryGetComponent(out Projectile projectile)) continue;
+            if (reflectedProjectiles.Contains(projectile)) continue;
+
+            reflectedProjectiles.Add(projectile);
+            projectile.Reflect(_swingAimDir, ownerCollider, reflectedTargetTag);
+        }
     }
 
     private void DetectHits()
@@ -148,5 +186,7 @@ public class Axe : Weapon
         if (attackPoint == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(attackPoint.position, reflectionRange);
     }
 }

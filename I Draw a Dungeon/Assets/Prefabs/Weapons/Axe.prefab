@@ -331,6 +331,10 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 72
+  projectileLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  reflectedTargetTag: 
   swingAngle: 90
   swingDuration: 0.45
   overshootAngle: 20
@@ -339,7 +343,7 @@ MonoBehaviour:
   activeEnd: 0.8
   hitStopDuration: 0.07
   meleeLungeForce: 15
-  meleeRecoilForce: 2
+  meleeRecoilForce: 1
 --- !u!1 &5326027735916157318
 GameObject:
   m_ObjectHideFlags: 0

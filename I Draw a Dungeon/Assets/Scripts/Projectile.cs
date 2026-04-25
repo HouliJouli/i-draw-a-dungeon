@@ -38,6 +38,23 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    public void Reflect(Vector2 newDirection, Collider2D newOwner, string newTargetTag = "")
+    {
+        targetTag = newTargetTag;
+        direction = newDirection.normalized;
+        spawnPosition = transform.position;
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+            rb.linearVelocity = direction * speed;
+
+        if (newOwner != null)
+        {
+            Collider2D col = GetComponent<Collider2D>();
+            if (col != null) Physics2D.IgnoreCollision(col, newOwner);
+        }
+    }
+
     private void Update()
     {
         if (!launched) return;
