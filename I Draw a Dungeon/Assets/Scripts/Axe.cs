@@ -49,6 +49,14 @@ public class Axe : Weapon
     [FoldoutGroup("Axe Feel"), MinValue(0f)]
     [SerializeField] private float meleeRecoilForce = 3f;
 
+    [FoldoutGroup("Axe Feel"), Range(0f, 1f)]
+    [Tooltip("Velocidade do player enquanto o machado está equipado.")]
+    [SerializeField] private float equippedSpeedMultiplier = 0.7f;
+
+    [FoldoutGroup("Axe Feel"), Range(0f, 1f)]
+    [Tooltip("Velocidade do player durante o swing.")]
+    [SerializeField] private float swingSpeedMultiplier = 0.3f;
+
     [FoldoutGroup("Hit Window"), ShowInInspector, ReadOnly]
     public bool IsInActiveWindow { get; private set; }
 
@@ -63,6 +71,18 @@ public class Axe : Weapon
     {
         base.Awake();
         originalScale = transform.localScale;
+    }
+
+    private void OnEnable()
+    {
+        PlayerMovement playerMov = GetComponentInParent<PlayerMovement>();
+        if (playerMov != null) playerMov.SpeedMultiplier = equippedSpeedMultiplier;
+    }
+
+    private void OnDisable()
+    {
+        PlayerMovement playerMov = GetComponentInParent<PlayerMovement>();
+        if (playerMov != null) playerMov.SpeedMultiplier = 1f;
     }
 
     protected override void PerformAttack()
@@ -93,7 +113,10 @@ public class Axe : Weapon
         _swingAimDir             = aimDir.normalized;
         PlayerMovement playerMov = GetComponentInParent<PlayerMovement>();
         if (playerMov != null)
+        {
+            playerMov.SpeedMultiplier = swingSpeedMultiplier;
             playerMov.LungeVelocity = _swingAimDir * meleeLungeForce;
+        }
 
         _swingSequence = DOTween.Sequence();
 
@@ -116,7 +139,10 @@ public class Axe : Weapon
             transform.localRotation = Quaternion.identity;
             transform.localScale    = originalScale;
             if (playerMov != null)
+            {
+                playerMov.SpeedMultiplier = equippedSpeedMultiplier;
                 playerMov.LungeVelocity = -_swingAimDir * meleeRecoilForce;
+            }
         });
 
         _swingSequence.OnUpdate(() =>
