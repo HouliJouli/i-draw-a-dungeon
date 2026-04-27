@@ -15,7 +15,7 @@ public class Spear : Weapon
     [SerializeField] private float thrustDistance = 0.8f;
 
     [FoldoutGroup("Thrust Animation"), MinValue(0.05f)]
-    [SerializeField] private float thrustDuration = 0.15f;
+    [SerializeField] private float spearThrustDuration = 0.15f;
 
     [FoldoutGroup("Thrust Animation"), MinValue(0.05f)]
     [SerializeField] private float returnDuration = 0.12f;
@@ -160,7 +160,7 @@ public class Spear : Weapon
         _thrustSequence = DOTween.Sequence();
 
         _thrustSequence.Append(
-            transform.DOLocalMove(thrustTarget, thrustDuration).SetEase(Ease.OutQuint));
+            transform.DOLocalMove(thrustTarget, spearThrustDuration).SetEase(Ease.OutQuint));
 
         _thrustSequence.Append(
             transform.DOLocalMove(_originalLocalPosition, returnDuration).SetEase(Ease.InSine));
@@ -176,9 +176,9 @@ public class Spear : Weapon
         {
             float elapsed = _thrustSequence.Elapsed();
 
-            if (elapsed <= thrustDuration)
+            if (elapsed <= spearThrustDuration)
             {
-                float normalized = elapsed / thrustDuration;
+                float normalized = elapsed / spearThrustDuration;
                 if (normalized >= activeStart && normalized <= activeEnd)
                     DetectHits();
             }
