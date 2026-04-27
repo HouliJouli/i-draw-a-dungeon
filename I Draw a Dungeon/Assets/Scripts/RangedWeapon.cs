@@ -40,8 +40,7 @@ public class RangedWeapon : Weapon
             nocked = null;
         }
 
-        AimController aimController = GetComponentInParent<AimController>();
-        Vector2 aimDirection = aimController != null ? aimController.AimDirection : (Vector2)firePoint.right;
+        Vector2 aimDirection = AttackAimDirection;
 
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
         GameObject obj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);

@@ -70,8 +70,7 @@ public class MeleeWeapon : Weapon
             originalScale.y * (1f - squashAmount),
             originalScale.z);
 
-        AimController aimController = GetComponentInParent<AimController>();
-        Vector2 aimDir = aimController != null ? aimController.AimDirection : Vector2.right;
+        Vector2 aimDir = AttackAimDirection;
         PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
         if (playerMovement != null)
             playerMovement.LungeVelocity = aimDir.normalized * meleeLungeForce;

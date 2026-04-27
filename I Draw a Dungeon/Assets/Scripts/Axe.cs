@@ -111,8 +111,7 @@ public class Axe : Weapon
             originalScale.y * (1f - squashAmount),
             originalScale.z);
 
-        AimController aimController = GetComponentInParent<AimController>();
-        Vector2 aimDir              = aimController != null ? aimController.AimDirection : Vector2.right;
+        Vector2 aimDir = AttackAimDirection;
         _swingAimDir             = aimDir.normalized;
         PlayerMovement playerMov = GetComponentInParent<PlayerMovement>();
         if (playerMov != null)

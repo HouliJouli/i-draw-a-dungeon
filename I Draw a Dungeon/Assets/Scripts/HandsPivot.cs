@@ -38,7 +38,6 @@ public class HandsPivot : MonoBehaviour
     private float angularVelocity;
     private float rotationSwayOffset;
     private float movementSwayOffset;
-
     private Rigidbody2D _rb;
 
     private void Awake()
@@ -46,12 +45,10 @@ public class HandsPivot : MonoBehaviour
         _rb = GetComponentInParent<Rigidbody2D>();
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         Vector2 aimDir = aimController.AimDirection;
 
-        // Movement sway: project velocity onto the perpendicular of AimDirection
-        // Moving laterally relative to aim creates rotational lag (hand drag effect)
         float lateralVelocity = 0f;
         if (_rb != null)
         {
@@ -66,7 +63,6 @@ public class HandsPivot : MonoBehaviour
         float smoothAngle = Mathf.LerpAngle(transform.eulerAngles.z, targetAngle, rotationSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Euler(0f, 0f, smoothAngle);
 
-        // Rotation sway: based on angular velocity of the pivot itself
         float deltaAngle = Mathf.DeltaAngle(previousAngle, smoothAngle);
         angularVelocity = deltaAngle / Time.deltaTime;
         rotationSwayOffset = Mathf.Lerp(

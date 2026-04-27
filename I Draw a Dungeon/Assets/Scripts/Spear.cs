@@ -55,6 +55,7 @@ public class Spear : Weapon
     private Sequence _thrustSequence;
     private Vector3 _originalLocalPosition;
     private float _pressTime;
+    private Vector2 _chargeAimDirection;
 
     protected override void Awake()
     {
@@ -71,6 +72,10 @@ public class Spear : Weapon
         if (cooldownTimer > 0f) return;
         IsChargingThrow = true;
         _pressTime = Time.time;
+
+        // Captura direção no momento do press — usada tanto no thrust quanto no throw
+        AimController aimController = transform.root.GetComponentInChildren<AimController>();
+        _chargeAimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
 
         PlayerMovement player = GetComponentInParent<PlayerMovement>();
         if (player != null) player.SpeedMultiplier = throwSpeedMultiplier;
@@ -100,8 +105,7 @@ public class Spear : Weapon
         hitRegistered = false;
         transform.localPosition = _originalLocalPosition;
 
-        AimController aimController = GetComponentInParent<AimController>();
-        Vector2 aimDir = aimController != null ? aimController.AimDirection : Vector2.right;
+        Vector2 aimDir = AttackAimDirection;
         Rigidbody2D playerRb = GetComponentInParent<Rigidbody2D>();
 
         PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
@@ -151,8 +155,7 @@ public class Spear : Weapon
 
         cooldownTimer = attackCooldown;
 
-        AimController aimController = GetComponentInParent<AimController>();
-        Vector2 aimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
+        Vector2 aimDirection = _chargeAimDirection;
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
         WeaponHolder weaponHolder = GetComponentInParent<WeaponHolder>();
         int uses = RemainingUses;
