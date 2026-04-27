@@ -41,6 +41,10 @@ public abstract class Weapon : MonoBehaviour
     [FoldoutGroup("Attack Thrust"), MinValue(0.01f), ShowIf("thrustEnabled")]
     [SerializeField] private float thrustReturnDuration = 0.2f;
 
+    [FoldoutGroup("Slot Alignment"), MinValue(0.01f)]
+    [Tooltip("Duração do tween de retorno do slot à posição do braço após o ataque.")]
+    [SerializeField] private float slotReturnDuration = 0.35f;
+
     public bool HasLimitedUses => maxUses > 0;
 
     // Direção da mira capturada no exato frame do input — usada por toda lógica de ataque
@@ -50,7 +54,6 @@ public abstract class Weapon : MonoBehaviour
     private Vector3 _originalLocalPosition;
     private Vector3 _slotOriginalLocalPos;
     private Sequence _thrustSequence;
-    private Sequence _slotSequence;
     private AimController _aimController;
 
     protected virtual void Awake()
@@ -76,21 +79,29 @@ public abstract class Weapon : MonoBehaviour
     }
 
     // Move o slot para a linha central antes do ataque e retorna depois
-    private void AlignSlotForAttack()
+    protected void HoldSlotCentered()
+    {
+        if (transform.parent == null) return;
+        transform.parent.DOKill();
+        transform.parent.localPosition = new Vector3(
+            _slotOriginalLocalPos.x, 0f, _slotOriginalLocalPos.z);
+    }
+
+    protected void AlignSlotForAttack()
     {
         if (transform.parent == null) return;
 
-        _slotSequence?.Kill();
-
-        // Snapa para linha central (y=0) mantendo x e z originais
+        // Mata qualquer tween pendente no slot e snapa para linha central
+        transform.parent.DOKill();
         transform.parent.localPosition = new Vector3(
             _slotOriginalLocalPos.x, 0f, _slotOriginalLocalPos.z);
 
-        // Retorna ao braço original após o cooldown
-        _slotSequence = DOTween.Sequence();
-        _slotSequence.AppendInterval(attackCooldown);
-        _slotSequence.Append(
-            transform.parent.DOLocalMove(_slotOriginalLocalPos, 0.2f).SetEase(Ease.OutElastic));
+        // Reagenda retorno a partir do cooldown do último ataque — ataques em cadeia
+        // ficam em Y=0 e retornam somente após o último cooldown
+        transform.parent
+            .DOLocalMove(_slotOriginalLocalPos, slotReturnDuration)
+            .SetEase(Ease.InOutSine)
+            .SetDelay(attackCooldown);
     }
 
     public virtual void OnAttackPressed() => TryAttack();
@@ -141,7 +152,7 @@ public abstract class Weapon : MonoBehaviour
             GetComponentInParent<WeaponHolder>()?.BreakCurrentWeapon();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (cooldownTimer > 0f)
             cooldownTimer -= Time.deltaTime;

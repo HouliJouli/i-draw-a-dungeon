@@ -67,6 +67,13 @@ public class Spear : Weapon
         _originalLocalPosition = transform.localPosition;
     }
 
+    protected override void Update()
+    {
+        base.Update();
+        if (IsChargingThrow)
+            HoldSlotCentered();
+    }
+
     public override void OnAttackPressed()
     {
         if (cooldownTimer > 0f) return;
@@ -77,6 +84,8 @@ public class Spear : Weapon
         AimController aimController = transform.root.GetComponentInChildren<AimController>();
         _chargeAimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
 
+        AlignSlotForAttack();
+
         PlayerMovement player = GetComponentInParent<PlayerMovement>();
         if (player != null) player.SpeedMultiplier = throwSpeedMultiplier;
     }
@@ -85,6 +94,9 @@ public class Spear : Weapon
     {
         if (!IsChargingThrow) return;
         IsChargingThrow = false;
+
+        AimController aimController = transform.root.GetComponentInChildren<AimController>();
+        _chargeAimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
 
         PlayerMovement player = GetComponentInParent<PlayerMovement>();
         if (player != null) player.SpeedMultiplier = 1f;
@@ -166,6 +178,7 @@ public class Spear : Weapon
             playerMovement.LungeVelocity = aimDirection.normalized * throwLungeForce;
 
         Vector3 spawnPos = tipPoint.position;
+        AlignSlotForAttack();
         weaponHolder?.BreakCurrentWeapon();
 
         GameObject obj = Instantiate(spearProjectilePrefab, spawnPos, Quaternion.Euler(0f, 0f, angle));

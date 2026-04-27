@@ -71,8 +71,7 @@ public class HandsPivot : MonoBehaviour
             rotationSwaySpeed * Time.deltaTime);
         previousAngle = smoothAngle;
 
-        bool facingLeft = aimDir.x < 0f;
-        transform.localScale = new Vector3(1f, facingLeft ? -1f : 1f, 1f);
+        transform.localScale = Vector3.one;
 
         if (rightWeaponSlot != null)
             rightWeaponSlot.localPosition = new Vector2(rightWeaponSlot.localPosition.x, rotationSwayOffset);

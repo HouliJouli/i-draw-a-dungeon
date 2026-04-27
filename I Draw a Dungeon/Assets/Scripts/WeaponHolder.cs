@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -23,6 +24,9 @@ public class WeaponHolder : MonoBehaviour
 
         if (CurrentWeapon != null)
             Destroy(CurrentWeapon.gameObject);
+
+        // Garante que o slot está na posição correta antes de o Awake da nova arma capturar _slotOriginalLocalPos
+        weaponSlot.DOComplete();
 
         GameObject instance = Instantiate(prefab, weaponSlot);
         instance.transform.localPosition = Vector3.zero;

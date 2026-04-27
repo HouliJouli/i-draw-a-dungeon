@@ -82,6 +82,13 @@ MonoBehaviour:
   attackRange: 0.5
   attackCooldown: 0.5
   maxUses: 0
+  thrustEnabled: 1
+  anticipationDistance: 0.05
+  anticipationDuration: 0.06
+  thrustTargetRadius: 0.8
+  thrustDuration: 0.08
+  thrustReturnDuration: 0.2
+  slotAlignDuration: 0.08
   attackPoint: {fileID: 676930918301256637}
   enemyLayers:
     serializedVersion: 2
