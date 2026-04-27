@@ -62,7 +62,6 @@ public class Spear : Weapon
     private bool hitRegistered;
     private Sequence _thrustSequence;
     private Tween _chargeShakeTween;
-    private Vector3 _originalLocalPosition;
     private float _pressTime;
     private Vector2 _chargeAimDirection;
     private Transform _playerSprite;
@@ -74,7 +73,6 @@ public class Spear : Weapon
 
     private void Start()
     {
-        _originalLocalPosition = transform.localPosition;
         SpriteRenderer sr = transform.root.GetComponentInChildren<SpriteRenderer>();
         if (sr != null) _playerSprite = sr.transform;
     }

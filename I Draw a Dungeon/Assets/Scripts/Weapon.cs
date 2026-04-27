@@ -51,7 +51,7 @@ public abstract class Weapon : MonoBehaviour
     protected Vector2 AttackAimDirection { get; private set; } = Vector2.right;
 
     protected float cooldownTimer;
-    private Vector3 _originalLocalPosition;
+    protected Vector3 _originalLocalPosition;
     private Vector3 _slotOriginalLocalPos;
     private Sequence _thrustSequence;
     private AimController _aimController;

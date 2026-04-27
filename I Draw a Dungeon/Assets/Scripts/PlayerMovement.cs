@@ -14,6 +14,9 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     [BoxGroup("Weapon"), Required]
     [SerializeField] private WeaponHolder weaponHolder;
 
+    [BoxGroup("Weapon"), Required]
+    [SerializeField] private ShieldController shieldController;
+
     [BoxGroup("Weapon"), MinValue(0f)]
     [SerializeField] private float collectRadius = 1.5f;
 
@@ -112,6 +115,12 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, collectRadius);
         foreach (Collider2D hit in hits)
         {
+            if (hit.TryGetComponent(out ShieldPickup shieldPickup))
+            {
+                shieldPickup.Collect(shieldController);
+                return;
+            }
+
             if (!hit.TryGetComponent(out WeaponPickup pickup)) continue;
             if (hit.transform.IsChildOf(weaponHolder.transform)) continue;
 

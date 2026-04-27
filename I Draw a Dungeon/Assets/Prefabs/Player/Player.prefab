@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 429764998513953262}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1350,6 +1350,7 @@ GameObject:
   - component: {fileID: 5260066017378238164}
   - component: {fileID: 6172609641864192715}
   - component: {fileID: 4912705962407509508}
+  - component: {fileID: 2812629965027385541}
   - component: {fileID: 6237515974379719320}
   - component: {fileID: 7909395765637839991}
   - component: {fileID: 6772583792095653360}
@@ -1488,6 +1489,7 @@ MonoBehaviour:
   maxHealth: 100
   moveSpeed: 5
   weaponHolder: {fileID: 4912705962407509508}
+  shieldController: {fileID: 2812629965027385541}
   collectRadius: 1.5
   dashSpeed: 20
   dashDuration: 0.15
@@ -1508,6 +1510,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponHolder
   weaponSlot: {fileID: 8627167640006747412}
   defaultWeaponPrefab: {fileID: 4816885963356433912, guid: 1da5f4a3e090063498e49f222a31d29b, type: 3}
+--- !u!114 &2812629965027385541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8024490154778655733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bab9acca7bdbd74fb4c51e59dbb30b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShieldController
+  aimController: {fileID: 7909395765637839991}
+  leftWeaponSlot: {fileID: 282717051417413151}
+  shieldDistance: 1
 --- !u!114 &6237515974379719320
 MonoBehaviour:
   m_ObjectHideFlags: 0
