@@ -41,6 +41,14 @@ public class Spear : Weapon
     [FoldoutGroup("Throw Feel"), MinValue(0f)]
     [SerializeField] private float throwLungeForce = 7f;
 
+    [FoldoutGroup("Charge Shake"), MinValue(0f)]
+    [Tooltip("Intensidade do tremor do sprite durante o charge.")]
+    [SerializeField] private float chargeShakeStrength = 0.04f;
+
+    [FoldoutGroup("Charge Shake"), MinValue(1)]
+    [Tooltip("Vibrato — quantidade de oscilações por segundo.")]
+    [SerializeField] private int chargeShakeVibrato = 20;
+
     [FoldoutGroup("Throw"), Required]
     [SerializeField] private GameObject spearProjectilePrefab;
 
@@ -53,9 +61,11 @@ public class Spear : Weapon
     private readonly HashSet<Collider2D> hitTargets = new();
     private bool hitRegistered;
     private Sequence _thrustSequence;
+    private Tween _chargeShakeTween;
     private Vector3 _originalLocalPosition;
     private float _pressTime;
     private Vector2 _chargeAimDirection;
+    private Transform _playerSprite;
 
     protected override void Awake()
     {
@@ -65,6 +75,8 @@ public class Spear : Weapon
     private void Start()
     {
         _originalLocalPosition = transform.localPosition;
+        SpriteRenderer sr = transform.root.GetComponentInChildren<SpriteRenderer>();
+        if (sr != null) _playerSprite = sr.transform;
     }
 
     protected override void Update()
@@ -85,6 +97,7 @@ public class Spear : Weapon
         _chargeAimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
 
         AlignSlotForAttack();
+        StartChargeShake();
 
         PlayerMovement player = GetComponentInParent<PlayerMovement>();
         if (player != null) player.SpeedMultiplier = throwSpeedMultiplier;
@@ -94,6 +107,8 @@ public class Spear : Weapon
     {
         if (!IsChargingThrow) return;
         IsChargingThrow = false;
+
+        StopChargeShake();
 
         AimController aimController = transform.root.GetComponentInChildren<AimController>();
         _chargeAimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
@@ -105,6 +120,22 @@ public class Spear : Weapon
             PerformThrow();
         else
             TryAttack();
+    }
+
+    private void StartChargeShake()
+    {
+        if (_playerSprite == null) return;
+        _chargeShakeTween?.Kill(complete: true);
+        // Duração longa o suficiente para durar qualquer charge — killed no release
+        _chargeShakeTween = _playerSprite
+            .DOShakePosition(999f, chargeShakeStrength, chargeShakeVibrato, 90f, false, true);
+    }
+
+    private void StopChargeShake()
+    {
+        if (_playerSprite == null) return;
+        _chargeShakeTween?.Kill(complete: true);
+        _chargeShakeTween = null;
     }
 
     // Spear já anima localPosition via _thrustSequence própria
