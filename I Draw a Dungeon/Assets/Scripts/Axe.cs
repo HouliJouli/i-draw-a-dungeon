@@ -85,6 +85,9 @@ public class Axe : Weapon
         if (playerMov != null) playerMov.SpeedMultiplier = 1f;
     }
 
+    // Axe já tem swing rotacional amplo — thrust de posição conflitaria
+    protected override void PlayAttackThrust() { }
+
     protected override void PerformAttack()
     {
         _swingSequence?.Kill();
