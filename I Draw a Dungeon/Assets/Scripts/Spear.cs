@@ -97,8 +97,8 @@ public class Spear : Weapon
         hitRegistered = false;
         transform.localPosition = _originalLocalPosition;
 
-        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
-        Vector2 aimDir = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        AimController aimController = GetComponentInParent<AimController>();
+        Vector2 aimDir = aimController != null ? aimController.AimDirection : Vector2.right;
         Rigidbody2D playerRb = GetComponentInParent<Rigidbody2D>();
 
         PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
@@ -148,8 +148,8 @@ public class Spear : Weapon
 
         cooldownTimer = attackCooldown;
 
-        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
-        Vector2 aimDirection = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        AimController aimController = GetComponentInParent<AimController>();
+        Vector2 aimDirection = aimController != null ? aimController.AimDirection : Vector2.right;
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
         WeaponHolder weaponHolder = GetComponentInParent<WeaponHolder>();
         int uses = RemainingUses;

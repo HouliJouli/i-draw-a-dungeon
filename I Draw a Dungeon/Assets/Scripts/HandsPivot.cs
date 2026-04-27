@@ -1,14 +1,10 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class HandsPivot : MonoBehaviour
 {
-    [BoxGroup("References")]
-    [SerializeField] private Camera cam;
-
-    [BoxGroup("References")]
-    [SerializeField] private PlayerInput playerInput;
+    [BoxGroup("References"), Required]
+    [SerializeField] private AimController aimController;
 
     [BoxGroup("Weapon Slots")]
     [SerializeField] private Transform rightWeaponSlot;
@@ -19,76 +15,72 @@ public class HandsPivot : MonoBehaviour
     [FoldoutGroup("Rotation"), MinValue(0f)]
     [SerializeField] private float rotationSpeed = 20f;
 
-    [FoldoutGroup("Sway"), MinValue(0f)]
-    [SerializeField] private float swayAmount = 0.05f;
+    [FoldoutGroup("Sway/Rotation"), MinValue(0f)]
+    [Tooltip("Sway baseado na velocidade angular da mira (rotação rápida).")]
+    [SerializeField] private float rotationSwayAmount = 0.05f;
 
-    [FoldoutGroup("Sway"), MinValue(0f)]
-    [SerializeField] private float swaySpeed = 8f;
+    [FoldoutGroup("Sway/Rotation"), MinValue(0f)]
+    [SerializeField] private float rotationSwaySpeed = 8f;
 
-    private Vector2 aimInput;
-    private Vector2 lastAimDirection = Vector2.right;
+    [FoldoutGroup("Sway/Movement"), MinValue(0f)]
+    [Tooltip("Intensidade do atraso angular causado pelo movimento lateral (hand drag).")]
+    [SerializeField] private float movementSwayScale = 4f;
+
+    [FoldoutGroup("Sway/Movement"), MinValue(0f)]
+    [Tooltip("Velocidade de suavização do movement sway.")]
+    [SerializeField] private float movementSwaySpeed = 6f;
+
+    [FoldoutGroup("Sway/Movement"), MinValue(0f)]
+    [Tooltip("Offset máximo em graus que o movement sway pode aplicar.")]
+    [SerializeField] private float movementSwayMaxDegrees = 15f;
+
     private float previousAngle;
     private float angularVelocity;
-    private float swayOffset;
+    private float rotationSwayOffset;
+    private float movementSwayOffset;
 
-    public Vector2 AimDirection => lastAimDirection;
+    private Rigidbody2D _rb;
 
     private void Awake()
     {
-        if (cam == null) cam = Camera.main;
-    }
-
-    public void OnLook(InputValue value)
-    {
-        aimInput = value.Get<Vector2>();
-        Debug.Log($"[OnLook] {transform.root.name} → {aimInput}");
+        _rb = GetComponentInParent<Rigidbody2D>();
     }
 
     private void Update()
     {
-        Vector2 direction = ResolveAimDirection();
-        if (direction == Vector2.zero) return;
+        Vector2 aimDir = aimController.AimDirection;
 
-        lastAimDirection = direction;
+        // Movement sway: project velocity onto the perpendicular of AimDirection
+        // Moving laterally relative to aim creates rotational lag (hand drag effect)
+        float lateralVelocity = 0f;
+        if (_rb != null)
+        {
+            Vector2 perp = new Vector2(-aimDir.y, aimDir.x);
+            lateralVelocity = Vector2.Dot(_rb.linearVelocity, perp);
+        }
 
-        float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        float movementSwayTarget = Mathf.Clamp(lateralVelocity * movementSwayScale, -movementSwayMaxDegrees, movementSwayMaxDegrees);
+        movementSwayOffset = Mathf.Lerp(movementSwayOffset, movementSwayTarget, movementSwaySpeed * Time.deltaTime);
+
+        float targetAngle = Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg + movementSwayOffset;
         float smoothAngle = Mathf.LerpAngle(transform.eulerAngles.z, targetAngle, rotationSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Euler(0f, 0f, smoothAngle);
 
+        // Rotation sway: based on angular velocity of the pivot itself
         float deltaAngle = Mathf.DeltaAngle(previousAngle, smoothAngle);
         angularVelocity = deltaAngle / Time.deltaTime;
-        swayOffset = Mathf.Lerp(swayOffset, Mathf.Clamp(angularVelocity * swayAmount, -swayAmount, swayAmount), swaySpeed * Time.deltaTime);
+        rotationSwayOffset = Mathf.Lerp(
+            rotationSwayOffset,
+            Mathf.Clamp(angularVelocity * rotationSwayAmount, -rotationSwayAmount, rotationSwayAmount),
+            rotationSwaySpeed * Time.deltaTime);
         previousAngle = smoothAngle;
 
-        bool facingLeft = direction.x < 0f;
+        bool facingLeft = aimDir.x < 0f;
         transform.localScale = new Vector3(1f, facingLeft ? -1f : 1f, 1f);
 
         if (rightWeaponSlot != null)
-            rightWeaponSlot.localPosition = new Vector2(rightWeaponSlot.localPosition.x, swayOffset);
+            rightWeaponSlot.localPosition = new Vector2(rightWeaponSlot.localPosition.x, rotationSwayOffset);
         if (leftWeaponSlot != null)
-            leftWeaponSlot.localPosition = new Vector2(leftWeaponSlot.localPosition.x, -swayOffset);
-    }
-
-    private Vector2 ResolveAimDirection()
-    {
-        bool isMouseScheme = playerInput == null ||
-                             playerInput.currentControlScheme == "Keyboard&Mouse";
-
-        if (isMouseScheme)
-        {
-            Vector2 screenPos = (playerInput != null && aimInput != Vector2.zero)
-                ? aimInput
-                : Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
-
-            if (float.IsNaN(screenPos.x) || float.IsNaN(screenPos.y)) return Vector2.zero;
-            Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
-            worldPos.z = 0f;
-            return (worldPos - transform.position).normalized;
-        }
-        else
-        {
-            if (aimInput.magnitude < 0.1f) return Vector2.zero;
-            return aimInput.normalized;
-        }
+            leftWeaponSlot.localPosition = new Vector2(leftWeaponSlot.localPosition.x, -rotationSwayOffset);
     }
 }

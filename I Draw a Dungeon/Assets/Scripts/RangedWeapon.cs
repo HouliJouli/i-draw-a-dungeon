@@ -1,7 +1,6 @@
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class RangedWeapon : Weapon
 {
@@ -38,8 +37,8 @@ public class RangedWeapon : Weapon
             nocked = null;
         }
 
-        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
-        Vector2 aimDirection = handsPivot != null ? handsPivot.AimDirection : (Vector2)firePoint.right;
+        AimController aimController = GetComponentInParent<AimController>();
+        Vector2 aimDirection = aimController != null ? aimController.AimDirection : (Vector2)firePoint.right;
 
         Collider2D ownerCollider = GetComponentInParent<Collider2D>();
         GameObject obj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);

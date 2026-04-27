@@ -69,8 +69,8 @@ public class MeleeWeapon : Weapon
             originalScale.y * (1f - squashAmount),
             originalScale.z);
 
-        HandsPivot handsPivot = GetComponentInParent<HandsPivot>();
-        Vector2 aimDir = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        AimController aimController = GetComponentInParent<AimController>();
+        Vector2 aimDir = aimController != null ? aimController.AimDirection : Vector2.right;
         PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
         if (playerMovement != null)
             playerMovement.LungeVelocity = aimDir.normalized * meleeLungeForce;

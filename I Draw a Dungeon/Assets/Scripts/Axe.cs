@@ -108,8 +108,8 @@ public class Axe : Weapon
             originalScale.y * (1f - squashAmount),
             originalScale.z);
 
-        HandsPivot handsPivot    = GetComponentInParent<HandsPivot>();
-        Vector2 aimDir           = handsPivot != null ? handsPivot.AimDirection : Vector2.right;
+        AimController aimController = GetComponentInParent<AimController>();
+        Vector2 aimDir              = aimController != null ? aimController.AimDirection : Vector2.right;
         _swingAimDir             = aimDir.normalized;
         PlayerMovement playerMov = GetComponentInParent<PlayerMovement>();
         if (playerMov != null)
