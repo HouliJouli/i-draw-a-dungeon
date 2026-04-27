@@ -59,11 +59,15 @@ public abstract class Weapon : MonoBehaviour
     protected virtual void Awake()
     {
         RemainingUses = maxUses;
-        _originalLocalPosition = transform.localPosition;
         _aimController = transform.root.GetComponentInChildren<AimController>();
 
         if (transform.parent != null)
             _slotOriginalLocalPos = transform.parent.localPosition;
+    }
+
+    protected virtual void Start()
+    {
+        _originalLocalPosition = transform.localPosition;
     }
 
     public void TryAttack()
