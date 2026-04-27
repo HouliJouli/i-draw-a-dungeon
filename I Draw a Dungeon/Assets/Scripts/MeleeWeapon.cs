@@ -43,8 +43,9 @@ public class MeleeWeapon : Weapon
     private bool hitRegistered;
     private Sequence _swingSequence;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         originalScale = transform.localScale;
     }
 

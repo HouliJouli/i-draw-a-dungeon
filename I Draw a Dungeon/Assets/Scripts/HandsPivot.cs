@@ -13,7 +13,7 @@ public class HandsPivot : MonoBehaviour
     [SerializeField] private Transform leftWeaponSlot;
 
     [FoldoutGroup("Rotation"), MinValue(0f)]
-    [SerializeField] private float rotationSpeed = 20f;
+    [SerializeField] private float rotationSpeed = 4f;
 
     [FoldoutGroup("Sway/Rotation"), MinValue(0f)]
     [Tooltip("Sway baseado na velocidade angular da mira (rotação rápida).")]

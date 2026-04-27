@@ -26,6 +26,9 @@ public class RangedWeapon : Weapon
         SpawnNockedArrow();
     }
 
+    // RangedWeapon já anima localPosition via _recoilSequence própria
+    protected override void PlayAttackThrust() { }
+
     protected override void PerformAttack()
     {
         if (projectilePrefab == null || firePoint == null) return;

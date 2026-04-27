@@ -90,6 +90,9 @@ public class Spear : Weapon
             TryAttack();
     }
 
+    // Spear já anima localPosition via _thrustSequence própria
+    protected override void PlayAttackThrust() { }
+
     protected override void PerformAttack()
     {
         _thrustSequence?.Kill();
