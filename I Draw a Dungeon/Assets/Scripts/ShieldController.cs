@@ -51,7 +51,7 @@ public class ShieldController : MonoBehaviour
         Vector2 dir = aimController.AimDirection;
         _shieldTransform.position = transform.position + (Vector3)(dir * shieldDistance);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        _shieldTransform.rotation = Quaternion.Euler(0f, 0f, angle);
+        _shieldTransform.rotation = Quaternion.Euler(0f, 0f, angle - 90f);
     }
 
     private void ResetShieldToSlot()
