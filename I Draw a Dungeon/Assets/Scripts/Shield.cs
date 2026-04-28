@@ -1,0 +1,73 @@
+using Sirenix.OdinInspector;
+using UnityEngine;
+
+public class Shield : MonoBehaviour
+{
+    [FoldoutGroup("Energy"), MinValue(0.1f)]
+    [SerializeField] private float maxShieldTime = 3f;
+
+    [FoldoutGroup("Energy"), MinValue(0.1f)]
+    [Tooltip("Energia recuperada por segundo durante a recarga.")]
+    [SerializeField] private float rechargeRate = 1f;
+
+    [FoldoutGroup("Energy"), MinValue(0.1f)]
+    [Tooltip("Tempo de penalidade após energia zerar antes de recarregar.")]
+    [SerializeField] private float cooldownDuration = 2f;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    public ShieldState State { get; private set; } = ShieldState.Recharge;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    public float EnergyRatio => maxShieldTime > 0f ? Mathf.Clamp01(_currentEnergy / maxShieldTime) : 0f;
+
+    private float _currentEnergy;
+    private float _cooldownTimer;
+
+    public enum ShieldState { Recharge, Active, Cooldown }
+
+    private void Awake()
+    {
+        _currentEnergy = maxShieldTime;
+    }
+
+    public void Tick(bool holdingBlock)
+    {
+        switch (State)
+        {
+            case ShieldState.Recharge:
+                _currentEnergy = Mathf.Min(_currentEnergy + rechargeRate * Time.deltaTime, maxShieldTime);
+                if (holdingBlock && _currentEnergy > 0f)
+                    State = ShieldState.Active;
+                break;
+
+            case ShieldState.Active:
+                _currentEnergy -= Time.deltaTime;
+                if (_currentEnergy <= 0f)
+                {
+                    _currentEnergy = 0f;
+                    _cooldownTimer = cooldownDuration;
+                    State = ShieldState.Cooldown;
+                }
+                else if (!holdingBlock)
+                {
+                    State = ShieldState.Recharge;
+                }
+                break;
+
+            case ShieldState.Cooldown:
+                _currentEnergy = Mathf.Min(_currentEnergy + rechargeRate * Time.deltaTime, maxShieldTime);
+                _cooldownTimer -= Time.deltaTime;
+                if (_cooldownTimer <= 0f)
+                    State = ShieldState.Recharge;
+                break;
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (State != ShieldState.Active) return;
+
+        if (other.TryGetComponent(out Projectile _))
+            Destroy(other.gameObject);
+    }
+}

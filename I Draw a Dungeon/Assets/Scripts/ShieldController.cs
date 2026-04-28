@@ -19,9 +19,16 @@ public class ShieldController : MonoBehaviour
     public bool IsBlocking { get; private set; }
 
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
-    public bool HasShield => _shieldTransform != null;
+    public bool HasShield => _shield != null;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    public float ShieldEnergyRatio => _shield != null ? _shield.EnergyRatio : 0f;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    public Shield.ShieldState State => _shield != null ? _shield.State : Shield.ShieldState.Recharge;
 
     private InputAction _blockAction;
+    private Shield _shield;
     private Transform _shieldTransform;
 
     private void Awake()
@@ -32,8 +39,13 @@ public class ShieldController : MonoBehaviour
 
     private void Update()
     {
+        if (!HasShield) return;
+
+        bool holdingBlock = _blockAction?.IsPressed() ?? false;
+        _shield.Tick(holdingBlock);
+
         bool wasBlocking = IsBlocking;
-        IsBlocking = HasShield && (_blockAction?.IsPressed() ?? false);
+        IsBlocking = _shield.State == Shield.ShieldState.Active;
 
         if (IsBlocking)
             UpdateShieldTransform();
@@ -41,9 +53,10 @@ public class ShieldController : MonoBehaviour
             ResetShieldToSlot();
     }
 
-    public void SetShield(Transform shieldTransform)
+    public void SetShield(Shield shield)
     {
-        _shieldTransform = shieldTransform;
+        _shield = shield;
+        _shieldTransform = shield.transform;
     }
 
     private void UpdateShieldTransform()

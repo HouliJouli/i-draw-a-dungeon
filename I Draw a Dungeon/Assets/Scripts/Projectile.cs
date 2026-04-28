@@ -79,12 +79,18 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        if (other.TryGetComponent(out IDamageable damageable))
-            damageable.TakeDamage(damage);
+        ShieldController shield = other.GetComponentInParent<ShieldController>();
+        bool blockedByShield = shield != null && shield.IsBlocking;
 
-        HitEffect hitEffect = other.GetComponentInParent<HitEffect>();
-        if (hitEffect != null)
-            hitEffect.TriggerHit(transform.position);
+        if (!blockedByShield)
+        {
+            if (other.TryGetComponent(out IDamageable damageable))
+                damageable.TakeDamage(damage);
+
+            HitEffect hitEffect = other.GetComponentInParent<HitEffect>();
+            if (hitEffect != null)
+                hitEffect.TriggerHit(transform.position);
+        }
 
         Destroy(gameObject);
     }

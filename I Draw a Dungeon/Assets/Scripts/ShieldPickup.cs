@@ -65,7 +65,8 @@ public class ShieldPickup : MonoBehaviour
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
 
-        shieldController.SetShield(instance.transform);
+        Shield shield = instance.GetComponent<Shield>();
+        shieldController.SetShield(shield);
 
         Destroy(gameObject);
     }

@@ -124,6 +124,10 @@ public class Enemy : MonoBehaviour, IDamageable
     private bool TryAttackPlayer()
     {
         if (playerMovement != null && playerMovement.IsInvincible) return false;
+
+        ShieldController shield = player?.GetComponent<ShieldController>();
+        if (shield != null && shield.IsBlocking) return false;
+
         playerDamageable?.TakeDamage(attackDamage);
         return true;
     }

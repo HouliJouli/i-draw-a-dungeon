@@ -75,6 +75,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     public void TakeDamage(float amount)
     {
         if (isInvincible) { Debug.Log("Damage blocked by invincibility."); return; }
+        if (shieldController != null && shieldController.IsBlocking) { Debug.Log("Damage blocked by shield."); return; }
 
         currentHealth -= amount;
         Debug.Log($"Player took {amount} damage. HP: {currentHealth}/{maxHealth}");
@@ -134,6 +135,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         if (!value.isPressed) return;
         if (isDashing) return;
         if (cooldownTimer > 0f) return;
+        if (shieldController != null && shieldController.IsBlocking) return;
 
         isDashing = true;
         isInvincible = true;
