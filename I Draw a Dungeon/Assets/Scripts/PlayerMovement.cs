@@ -118,6 +118,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         {
             if (hit.TryGetComponent(out ShieldPickup shieldPickup))
             {
+                if (shieldController.HasShield) continue;
                 shieldPickup.Collect(shieldController);
                 return;
             }

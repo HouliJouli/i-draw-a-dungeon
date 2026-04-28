@@ -25,6 +25,9 @@ public class ShieldController : MonoBehaviour
     public float ShieldEnergyRatio => _shield != null ? _shield.EnergyRatio : 0f;
 
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    public int ShieldCurrentHits => _shield != null ? _shield.CurrentHits : 0;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     public Shield.ShieldState State => _shield != null ? _shield.State : Shield.ShieldState.Recharge;
 
     private InputAction _blockAction;
