@@ -82,7 +82,11 @@ public class Projectile : MonoBehaviour
         ShieldController shield = other.GetComponentInParent<ShieldController>();
         bool blockedByShield = shield != null && shield.IsBlocking;
 
-        if (!blockedByShield)
+        if (blockedByShield)
+        {
+            shield.TakeHit();
+        }
+        else
         {
             if (other.TryGetComponent(out IDamageable damageable))
                 damageable.TakeDamage(damage);

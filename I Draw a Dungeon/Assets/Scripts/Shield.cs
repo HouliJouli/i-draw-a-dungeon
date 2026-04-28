@@ -14,11 +14,18 @@ public class Shield : MonoBehaviour
     [Tooltip("Tempo de penalidade após energia zerar antes de recarregar.")]
     [SerializeField] private float cooldownDuration = 2f;
 
+    [FoldoutGroup("Durability"), MinValue(1)]
+    [Tooltip("Número de hits que o escudo aguenta antes de quebrar.")]
+    [SerializeField] private int maxHits = 5;
+
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     public ShieldState State { get; private set; } = ShieldState.Recharge;
 
     [BoxGroup("Debug"), ShowInInspector, ReadOnly]
     public float EnergyRatio => maxShieldTime > 0f ? Mathf.Clamp01(_currentEnergy / maxShieldTime) : 0f;
+
+    [BoxGroup("Debug"), ShowInInspector, ReadOnly]
+    public int CurrentHits { get; private set; }
 
     private float _currentEnergy;
     private float _cooldownTimer;
@@ -28,6 +35,14 @@ public class Shield : MonoBehaviour
     private void Awake()
     {
         _currentEnergy = maxShieldTime;
+        CurrentHits = maxHits;
+    }
+
+    public void TakeHit()
+    {
+        CurrentHits--;
+        if (CurrentHits <= 0)
+            Destroy(gameObject);
     }
 
     public void Tick(bool holdingBlock)
@@ -68,6 +83,9 @@ public class Shield : MonoBehaviour
         if (State != ShieldState.Active) return;
 
         if (other.TryGetComponent(out Projectile _))
+        {
             Destroy(other.gameObject);
+            TakeHit();
+        }
     }
 }

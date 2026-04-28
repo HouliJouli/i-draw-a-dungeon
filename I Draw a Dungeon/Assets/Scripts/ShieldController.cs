@@ -39,7 +39,11 @@ public class ShieldController : MonoBehaviour
 
     private void Update()
     {
-        if (!HasShield) return;
+        if (!HasShield)
+        {
+            IsBlocking = false;
+            return;
+        }
 
         bool holdingBlock = _blockAction?.IsPressed() ?? false;
         _shield.Tick(holdingBlock);
@@ -51,6 +55,11 @@ public class ShieldController : MonoBehaviour
             UpdateShieldTransform();
         else if (wasBlocking)
             ResetShieldToSlot();
+    }
+
+    public void TakeHit()
+    {
+        _shield?.TakeHit();
     }
 
     public void SetShield(Shield shield)
