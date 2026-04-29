@@ -16,6 +16,9 @@ public class WeaponPickup : MonoBehaviour
     [FoldoutGroup("Highlight")]
     [SerializeField] private Color highlightColor = Color.yellow;
 
+    public bool IsAxe => weaponPrefab != null && weaponPrefab.GetComponent<Axe>() != null;
+    public bool IsRanged => weaponPrefab != null && weaponPrefab.GetComponent<RangedWeapon>() != null;
+
     private SpriteRenderer sr;
     private Vector3 originalScale;
     private Color originalColor;

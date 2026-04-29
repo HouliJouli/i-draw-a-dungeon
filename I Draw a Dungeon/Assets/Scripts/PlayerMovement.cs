@@ -119,12 +119,15 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             if (hit.TryGetComponent(out ShieldPickup shieldPickup))
             {
                 if (shieldController.HasShield) continue;
+                if (weaponHolder.CurrentWeapon is Axe) continue;
+                if (weaponHolder.CurrentWeapon is RangedWeapon) continue;
                 shieldPickup.Collect(shieldController);
                 return;
             }
 
             if (!hit.TryGetComponent(out WeaponPickup pickup)) continue;
             if (hit.transform.IsChildOf(weaponHolder.transform)) continue;
+            if ((pickup.IsAxe || pickup.IsRanged) && shieldController.HasShield) continue;
 
             pickup.Collect(weaponHolder);
             return;
