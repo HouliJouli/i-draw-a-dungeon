@@ -3,6 +3,12 @@ using UnityEngine;
 
 public class Shield : MonoBehaviour
 {
+    [BoxGroup("Drop"), Required]
+    [Tooltip("Prefab do pickup que será spawnado no chão ao trocar o escudo.")]
+    [SerializeField] private GameObject pickupPrefab;
+
+    public GameObject PickupPrefab => pickupPrefab;
+
     [FoldoutGroup("Energy"), MinValue(0.1f)]
     [SerializeField] private float maxShieldTime = 3f;
 
@@ -43,6 +49,11 @@ public class Shield : MonoBehaviour
         CurrentHits--;
         if (CurrentHits <= 0)
             Destroy(gameObject);
+    }
+
+    public void SetCurrentHits(int hits)
+    {
+        CurrentHits = Mathf.Max(1, hits);
     }
 
     public void Tick(bool holdingBlock)

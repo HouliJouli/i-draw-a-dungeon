@@ -21,6 +21,7 @@ public class ShieldPickup : MonoBehaviour
     private Color originalColor;
     private Tween _scaleTween;
     private Tween _colorTween;
+    private int _hitsOverride = -1;
 
     private void Awake()
     {
@@ -57,6 +58,11 @@ public class ShieldPickup : MonoBehaviour
         if (sr != null) sr.color = originalColor;
     }
 
+    public void InitWithHits(int hits)
+    {
+        _hitsOverride = hits;
+    }
+
     public void Collect(ShieldController shieldController)
     {
         if (shieldController == null) return;
@@ -66,6 +72,7 @@ public class ShieldPickup : MonoBehaviour
         instance.transform.localRotation = Quaternion.identity;
 
         Shield shield = instance.GetComponent<Shield>();
+        if (_hitsOverride >= 1) shield.SetCurrentHits(_hitsOverride);
         shieldController.SetShield(shield);
 
         Destroy(gameObject);

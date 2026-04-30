@@ -109,10 +109,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8084e29bed88f004d87d865545502e9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedWeapon
+  pickupPrefab: {fileID: 203551955240906326}
   damage: 10
   attackRange: 0.5
   attackCooldown: 0.5
   maxUses: 5
+  thrustEnabled: 1
+  anticipationDistance: 0.05
+  anticipationDuration: 0.06
+  thrustTargetRadius: 0.8
+  thrustDuration: 0.08
+  thrustReturnDuration: 0.2
+  slotReturnDuration: 0.35
   projectilePrefab: {fileID: 1535881646283693088, guid: 78cb581c76f0f17468eca8170b9a6b7a, type: 3}
   firePoint: {fileID: 3122502869431640585}
   recoilDistance: 0.15

@@ -65,6 +65,24 @@ public class ShieldController : MonoBehaviour
         _shield?.TakeHit();
     }
 
+    public void DropShield(Vector3 position)
+    {
+        if (_shield == null) return;
+
+        GameObject pickupPrefab = _shield.PickupPrefab;
+        int hits = _shield.CurrentHits;
+
+        Destroy(_shield.gameObject);
+        _shield = null;
+        IsBlocking = false;
+
+        if (pickupPrefab == null || hits <= 0) return;
+
+        GameObject go = Instantiate(pickupPrefab, position, Quaternion.identity);
+        if (go.TryGetComponent(out ShieldPickup pickup))
+            pickup.InitWithHits(hits);
+    }
+
     public void SetShield(Shield shield)
     {
         _shield = shield;

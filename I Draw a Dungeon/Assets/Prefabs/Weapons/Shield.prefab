@@ -141,9 +141,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 189a84a88b545ee48b5c91244ff1fdf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Shield
+  pickupPrefab: {fileID: 4816885963356433912}
   maxShieldTime: 3
   rechargeRate: 1
   cooldownDuration: 3
+  maxHits: 5
 --- !u!1 &5475026146661089595
 GameObject:
   m_ObjectHideFlags: 0

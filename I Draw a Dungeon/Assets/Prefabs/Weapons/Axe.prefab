@@ -323,10 +323,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16667a7d65fa709488ac5fb98d657031, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Axe
+  pickupPrefab: {fileID: 4816885963356433912}
   damage: 10
   attackRange: 1
   attackCooldown: 0.8
   maxUses: 5
+  thrustEnabled: 1
+  anticipationDistance: 0.05
+  anticipationDuration: 0.06
+  thrustTargetRadius: 0.8
+  thrustDuration: 0.08
+  thrustReturnDuration: 0.2
+  slotReturnDuration: 0.35
   attackPoint: {fileID: 676930918301256637}
   enemyLayers:
     serializedVersion: 2
@@ -334,6 +342,7 @@ MonoBehaviour:
   projectileLayers:
     serializedVersion: 2
     m_Bits: 128
+  reflectionRange: 1.2
   reflectedTargetTag: 
   swingAngle: 90
   swingDuration: 0.45
@@ -344,6 +353,8 @@ MonoBehaviour:
   hitStopDuration: 0.07
   meleeLungeForce: 15
   meleeRecoilForce: 1
+  equippedSpeedMultiplier: 0.7
+  swingSpeedMultiplier: 0.3
 --- !u!1 &5326027735916157318
 GameObject:
   m_ObjectHideFlags: 0

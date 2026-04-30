@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -113,25 +114,44 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     {
         if (!value.isPressed) return;
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, collectRadius);
-        foreach (Collider2D hit in hits)
+        ShieldPickup nearestShield = FindNearest<ShieldPickup>();
+        if (nearestShield != null)
         {
-            if (hit.TryGetComponent(out ShieldPickup shieldPickup))
+            if (!shieldController.HasShield &&
+                weaponHolder.CurrentWeapon is not Axe &&
+                weaponHolder.CurrentWeapon is not RangedWeapon)
             {
-                if (shieldController.HasShield) continue;
-                if (weaponHolder.CurrentWeapon is Axe) continue;
-                if (weaponHolder.CurrentWeapon is RangedWeapon) continue;
-                shieldPickup.Collect(shieldController);
+                weaponHolder.DropCurrentWeapon(transform.position);
+                nearestShield.Collect(shieldController);
                 return;
             }
-
-            if (!hit.TryGetComponent(out WeaponPickup pickup)) continue;
-            if (hit.transform.IsChildOf(weaponHolder.transform)) continue;
-            if ((pickup.IsAxe || pickup.IsRanged) && shieldController.HasShield) continue;
-
-            pickup.Collect(weaponHolder);
-            return;
         }
+
+        WeaponPickup nearest = FindNearest<WeaponPickup>();
+        if (nearest == null) return;
+
+        if (nearest.IsAxe || nearest.IsRanged)
+        {
+            if (shieldController.HasShield)
+                shieldController.DropShield(transform.position);
+        }
+
+        weaponHolder.DropCurrentWeapon(transform.position);
+        nearest.Collect(weaponHolder);
+    }
+
+    private T FindNearest<T>() where T : Behaviour
+    {
+        T[] all = FindObjectsByType<T>(FindObjectsSortMode.None);
+        T nearest = null;
+        float minDist = collectRadius;
+        foreach (T obj in all)
+        {
+            if (!obj.enabled) continue;
+            float dist = Vector2.Distance(transform.position, obj.transform.position);
+            if (dist < minDist) { minDist = dist; nearest = obj; }
+        }
+        return nearest;
     }
 
     public void OnDash(InputValue value)

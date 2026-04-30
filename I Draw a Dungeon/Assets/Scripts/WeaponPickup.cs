@@ -68,6 +68,7 @@ public class WeaponPickup : MonoBehaviour
 
     public void Collect(WeaponHolder holder)
     {
+        Debug.Log($"[WeaponPickup.Collect] weaponPrefab={weaponPrefab?.name ?? "NULL"}");
         holder.EquipWeapon(weaponPrefab);
 
         if (_remainingUsesOverride >= 0 && holder.CurrentWeapon != null)
