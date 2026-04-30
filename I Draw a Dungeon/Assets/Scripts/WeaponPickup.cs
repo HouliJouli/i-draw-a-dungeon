@@ -7,6 +7,12 @@ public class WeaponPickup : MonoBehaviour
     [BoxGroup("Setup"), Required]
     [SerializeField] private GameObject weaponPrefab;
 
+    [BoxGroup("Setup")]
+    [Tooltip("Prefab de pickup que será instanciado no chão ao dropar esta arma. Deve referenciar um prefab do Project (não a própria arma).")]
+    [SerializeField] private GameObject dropPickupPrefab;
+
+    public GameObject DropPickupPrefab => dropPickupPrefab;
+
     [FoldoutGroup("Highlight"), MinValue(1f)]
     [SerializeField] private float pulseScale = 1.2f;
 
@@ -68,7 +74,6 @@ public class WeaponPickup : MonoBehaviour
 
     public void Collect(WeaponHolder holder)
     {
-        Debug.Log($"[WeaponPickup.Collect] weaponPrefab={weaponPrefab?.name ?? "NULL"}");
         holder.EquipWeapon(weaponPrefab);
 
         if (_remainingUsesOverride >= 0 && holder.CurrentWeapon != null)

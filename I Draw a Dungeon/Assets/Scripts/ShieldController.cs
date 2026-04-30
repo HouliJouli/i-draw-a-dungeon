@@ -80,7 +80,10 @@ public class ShieldController : MonoBehaviour
 
         GameObject go = Instantiate(pickupPrefab, position, Quaternion.identity);
         if (go.TryGetComponent(out ShieldPickup pickup))
+        {
+            pickup.enabled = true;
             pickup.InitWithHits(hits);
+        }
     }
 
     public void SetShield(Shield shield)

@@ -4,12 +4,6 @@ using UnityEngine;
 
 public abstract class Weapon : MonoBehaviour
 {
-    [BoxGroup("Drop")]
-    [Tooltip("Prefab do pickup que será spawnado no chão ao dropar esta arma. Deixe vazio na arma base.")]
-    [SerializeField] private GameObject pickupPrefab;
-
-    public GameObject PickupPrefab => pickupPrefab;
-
     [FoldoutGroup("Stats"), MinValue(0f)]
     [SerializeField] protected float damage = 10f;
 
@@ -52,6 +46,7 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] private float slotReturnDuration = 0.35f;
 
     public bool HasLimitedUses => maxUses > 0;
+    public WeaponPickup GetPickupComponent() => GetComponent<WeaponPickup>();
 
     // Direção da mira capturada no exato frame do input — usada por toda lógica de ataque
     protected Vector2 AttackAimDirection { get; private set; } = Vector2.right;

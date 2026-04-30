@@ -109,7 +109,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8084e29bed88f004d87d865545502e9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedWeapon
-  pickupPrefab: {fileID: 203551955240906326}
   damage: 10
   attackRange: 0.5
   attackCooldown: 0.5
@@ -138,6 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPickup
   weaponPrefab: {fileID: 203551955240906326}
+  dropPickupPrefab: {fileID: 203551955240906326}
   pulseScale: 1.2
   pulseSpeed: 3
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

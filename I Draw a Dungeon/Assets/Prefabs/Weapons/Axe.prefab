@@ -262,6 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPickup
   weaponPrefab: {fileID: 4816885963356433912}
+  dropPickupPrefab: {fileID: 4816885963356433912}
   pulseScale: 1.2
   pulseSpeed: 3
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -323,7 +324,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16667a7d65fa709488ac5fb98d657031, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Axe
-  pickupPrefab: {fileID: 4816885963356433912}
   damage: 10
   attackRange: 1
   attackCooldown: 0.8

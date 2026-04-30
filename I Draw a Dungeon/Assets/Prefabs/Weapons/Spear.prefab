@@ -80,6 +80,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPickup
   weaponPrefab: {fileID: 4816885963356433912}
+  dropPickupPrefab: {fileID: 4816885963356433912}
   pulseScale: 1.2
   pulseSpeed: 3
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -141,7 +142,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d5cfb25982bccc44960f0d1d747781d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spear
-  pickupPrefab: {fileID: 4816885963356433912}
   damage: 10
   attackRange: 0.5
   attackCooldown: 0.5
