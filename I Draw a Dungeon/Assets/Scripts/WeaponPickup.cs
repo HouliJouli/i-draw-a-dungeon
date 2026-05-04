@@ -22,6 +22,10 @@ public class WeaponPickup : MonoBehaviour
     [FoldoutGroup("Highlight")]
     [SerializeField] private Color highlightColor = Color.yellow;
 
+    [FoldoutGroup("Highlight"), MinValue(0f)]
+    [Tooltip("Distância máxima para ativar o highlight. Deve ser igual ao collectRadius do PlayerMovement.")]
+    [SerializeField] private float highlightRadius = 1.5f;
+
     public bool IsAxe => weaponPrefab != null && weaponPrefab.GetComponent<Axe>() != null;
     public bool IsRanged => weaponPrefab != null && weaponPrefab.GetComponent<RangedWeapon>() != null;
 
@@ -31,6 +35,7 @@ public class WeaponPickup : MonoBehaviour
     private Tween _scaleTween;
     private Tween _colorTween;
     private int _remainingUsesOverride = -1;
+    private bool _isHighlighted;
 
     private void Awake()
     {
@@ -39,9 +44,33 @@ public class WeaponPickup : MonoBehaviour
         if (sr != null) originalColor = sr.color;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void Update()
     {
-        if (!other.CompareTag("Player")) return;
+        bool playerNear = IsPlayerNear();
+
+        if (playerNear && !_isHighlighted)
+            StartHighlight();
+        else if (!playerNear && _isHighlighted)
+            StopHighlight();
+    }
+
+    private bool IsPlayerNear()
+    {
+        PlayerMovement[] players = FindObjectsByType<PlayerMovement>(FindObjectsSortMode.None);
+        foreach (PlayerMovement p in players)
+        {
+            if (!p.gameObject.activeSelf) continue;
+            if (Vector2.Distance(transform.position, p.transform.position) <= highlightRadius)
+                return true;
+        }
+        return false;
+    }
+
+    private void StartHighlight()
+    {
+        _isHighlighted = true;
+        _scaleTween?.Kill();
+        _colorTween?.Kill();
 
         float cycleDuration = 1f / pulseSpeed;
 
@@ -57,10 +86,9 @@ public class WeaponPickup : MonoBehaviour
                 .SetLoops(-1, LoopType.Yoyo);
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    private void StopHighlight()
     {
-        if (!other.CompareTag("Player")) return;
-
+        _isHighlighted = false;
         _scaleTween?.Kill();
         _colorTween?.Kill();
         transform.localScale = originalScale;
