@@ -121,7 +121,6 @@ public class PlayerMovement : MonoBehaviour, IDamageable
                 weaponHolder.CurrentWeapon is not Axe &&
                 weaponHolder.CurrentWeapon is not RangedWeapon)
             {
-                weaponHolder.DropCurrentWeapon(transform.position);
                 nearestShield.Collect(shieldController);
                 return;
             }
